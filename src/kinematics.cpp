@@ -23,6 +23,8 @@ Interpolation interpBLZ;
 Interpolation interpBLT;
 
 void kinematics(int leg, float xIn, float yIn, float zIn, float roll, float pitch, float yawIn, int interOn, int dur) {
+    SerialMon.printf("[KINEMATICS] leg: %d, xIn: %.2f, yIn: %.2f, zIn: %.2f, roll: %.2f, pitch: %.2f, yawIn: %.2f, interOn: %d, dur: %d\n", leg, xIn, yIn, zIn, roll, pitch, yawIn, interOn, dur);
+
     // leg 1  : front left
     // leg 2  : front right
     // leg 3  : back left
@@ -332,37 +334,38 @@ void kinematics(int leg, float xIn, float yIn, float zIn, float roll, float pitc
 
     // write to joints
 
-    float conversion;
-    conversion = 0.02777777777777777777777777777778;  // factor for converting degrees to motor turns used by the ODrive
+    float conversion = 0.02777777777777777777777777777778;  // factor for converting degrees to motor turns used by the ODrive
+
+    float shoulderAngle1Counts, shoulderAngle2Counts, shoulderAngleCounts, kneeAngleCounts, hipAngleCounts;
 
     if (leg == 1) {                                                              // front right
-        float shoulderAngle1Counts = (shoulderAngle1Degrees - 45) * conversion;  // convert to encoder counts
-        float shoulderAngle2Counts = shoulderAngle2Degrees * conversion;         // convert to encoder counts
-        float shoulderAngleCounts = shoulderAngle1Counts + shoulderAngle2Counts;
-        float kneeAngleCounts = (kneeAngleDegrees - 90) * conversion;  // convert to encoder counts
-        float hipAngleCounts = hipAngle1Degrees * conversion;          // convert to encoder counts
+        shoulderAngle1Counts = (shoulderAngle1Degrees - 45) * conversion;  // convert to encoder counts
+        shoulderAngle2Counts = shoulderAngle2Degrees * conversion;         // convert to encoder counts
+        shoulderAngleCounts = shoulderAngle1Counts + shoulderAngle2Counts;
+        kneeAngleCounts = (kneeAngleDegrees - 90) * conversion;  // convert to encoder counts
+        hipAngleCounts = hipAngle1Degrees * conversion;          // convert to encoder counts
         driveJoints(21, shoulderAngleCounts);                          // front right shoulder
         driveJoints(20, kneeAngleCounts);                              // front right knee
         driveJoints(10, hipAngleCounts);                               // front right hip
     }
 
     else if (leg == 2) {                                                         // front left
-        float shoulderAngle1Counts = (shoulderAngle1Degrees - 45) * conversion;  // convert to encoder counts
-        float shoulderAngle2Counts = shoulderAngle2Degrees * conversion;         // convert to encoder counts
-        float shoulderAngleCounts = shoulderAngle1Counts + shoulderAngle2Counts;
-        float kneeAngleCounts = (kneeAngleDegrees - 90) * conversion;  // convert to encoder counts
-        float hipAngleCounts = hipAngle1Degrees * conversion;          // convert to encoder counts
+        shoulderAngle1Counts = (shoulderAngle1Degrees - 45) * conversion;  // convert to encoder counts
+        shoulderAngle2Counts = shoulderAngle2Degrees * conversion;         // convert to encoder counts
+        shoulderAngleCounts = shoulderAngle1Counts + shoulderAngle2Counts;
+        kneeAngleCounts = (kneeAngleDegrees - 90) * conversion;  // convert to encoder counts
+        hipAngleCounts = hipAngle1Degrees * conversion;          // convert to encoder counts
         driveJoints(51, shoulderAngleCounts);                          // front left shoulder
         driveJoints(50, kneeAngleCounts);                              // front left knee
         driveJoints(40, hipAngleCounts);                               // front left hip
     }
 
     else if (leg == 3) {                                                         // back left
-        float shoulderAngle1Counts = (shoulderAngle1Degrees - 45) * conversion;  // convert to encoder counts
-        float shoulderAngle2Counts = shoulderAngle2Degrees * conversion;         // convert to encoder counts
-        float shoulderAngleCounts = shoulderAngle1Counts - shoulderAngle2Counts;
-        float kneeAngleCounts = (kneeAngleDegrees - 90) * conversion;  // convert to encoder counts
-        float hipAngleCounts = hipAngle1Degrees * conversion;          // convert to encoder counts
+        shoulderAngle1Counts = (shoulderAngle1Degrees - 45) * conversion;  // convert to encoder counts
+        shoulderAngle2Counts = shoulderAngle2Degrees * conversion;         // convert to encoder counts
+        shoulderAngleCounts = shoulderAngle1Counts - shoulderAngle2Counts;
+        kneeAngleCounts = (kneeAngleDegrees - 90) * conversion;  // convert to encoder counts
+        hipAngleCounts = hipAngle1Degrees * conversion;          // convert to encoder counts
         driveJoints(61, shoulderAngleCounts);                          // back left shoulder
         driveJoints(60, kneeAngleCounts);                              // back left knee
         driveJoints(41, hipAngleCounts);                               // back left hip
@@ -370,11 +373,11 @@ void kinematics(int leg, float xIn, float yIn, float zIn, float roll, float pitc
     }
 
     else if (leg == 4) {                                                         // back right
-        float shoulderAngle1Counts = (shoulderAngle1Degrees - 45) * conversion;  // convert to encoder counts
-        float shoulderAngle2Counts = shoulderAngle2Degrees * conversion;         // convert to encoder counts
-        float shoulderAngleCounts = shoulderAngle1Counts - shoulderAngle2Counts;
-        float kneeAngleCounts = (kneeAngleDegrees - 90) * conversion;  // convert to encoder counts
-        float hipAngleCounts = hipAngle1Degrees * conversion;          // convert to encoder counts
+        shoulderAngle1Counts = (shoulderAngle1Degrees - 45) * conversion;  // convert to encoder counts
+        shoulderAngle2Counts = shoulderAngle2Degrees * conversion;         // convert to encoder counts
+        shoulderAngleCounts = shoulderAngle1Counts - shoulderAngle2Counts;
+        kneeAngleCounts = (kneeAngleDegrees - 90) * conversion;  // convert to encoder counts
+        hipAngleCounts = hipAngle1Degrees * conversion;          // convert to encoder counts
         driveJoints(31, shoulderAngleCounts);                          // back right shoulder
         driveJoints(30, kneeAngleCounts);                              // back right knee
         driveJoints(11, hipAngleCounts);                               // back right hip

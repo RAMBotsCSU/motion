@@ -1,34 +1,27 @@
+#include <Arduino.h>
+
 // IMU
-#include <MPU6050.h>
+// #include <MPU6050.h>
 
-// Radio
-#include <RF24.h>
-
-// I2C LCD
-#include <LiquidCrystal_I2C.h>
-LiquidCrystal_I2C lcd(0x27, 16, 2);  // set the LCD address to 0x27 for a 16 chars and 2 line display
 
 #include "common.h"
 #include "kinematics.h"
 #include "ODriveInit.h"
 #include "thresholdSticks.h"
-
-RF24 radio(9, 10);  // CE, CSN
-const byte addresses[][6] = {"00001", "00002"};
+#include "MotionProtocol_generated.h"
 
 
-RECEIVE_DATA_STRUCTURE mydata_remote;
+bool remoteState = false;
 
-int toggleTopOld;
-int remoteState;
-int remoteStateOld;
+int maxLegHeight = 380,
+    minLegHeight = 320;
 
-float RLR = 0;
-float RFB = 0;
-float RT = 340;
-float LLR = 0;
-float LFB = 0;
-float LT = 0;
+int RLR = 0;
+int RFB = 0;
+int RT = 0;
+int LLR = 0;
+int LFB = 0;
+int LT = 0;
 
 float RLRFiltered = 0;
 float RFBFiltered = 0;
@@ -57,13 +50,8 @@ int stepFlag = 0;
 long previousStepMillis = 0;
 int stepStartFlag = 0;
 
-int mode;
-int modeOld;
-int modeFlag;
-int menuFlag;
-int modeConfirm;
-int modeConfirmFlag = 0;
 int runMode = 0;
+bool enabled = false;
 
 float longLeg1;
 float shortLeg1;
@@ -100,11 +88,11 @@ float timerScale2;   // multiplier
 
 // IMU variables
 
-MPU6050 accelgyro;
-int16_t ax, ay, az;
-int16_t gx, gy, gz;
+// MPU6050 accelgyro;
+// int16_t ax, ay, az;
+// int16_t gx, gy, gz;
 
-#define Gyr_Gain 0.00763358
+// #define Gyr_Gain 0.00763358
 
 float AccelX;
 float AccelY;
@@ -134,11 +122,12 @@ float legPitch;
 float legRollFiltered;
 float legPitchFiltered;
 
-// ****************** SETUP ******************************
 
+// ****************** SETUP ******************************
 void setup() {
     // initialize serial communication
-    Serial.begin(115200);
+    SerialUSB.begin(115200);
+    SerialUSB.setTimeout(0);
 
     Serial1.begin(115200);
     Serial2.begin(115200);
@@ -147,20 +136,30 @@ void setup() {
     Serial5.begin(115200);
     Serial6.begin(115200);
 
-    radio.begin();
-    radio.openWritingPipe(addresses[0]);     // 00002
-    radio.openReadingPipe(1, addresses[1]);  // 00001
-    radio.setPALevel(RF24_PA_MIN);
-
-    radio.startListening();
+    SerialMon.begin(115200);
 
     // LCD
-    lcd.init();
-    lcd.backlight();
-    lcd.setCursor(0, 0);
-    lcd.print("openDog V3");
-    lcd.setCursor(0, 1);
-    lcd.print("S:0  C:0");
+    // lcd.init();
+    // lcd.backlight();
+    // lcd.setCursor(0, 0);
+    // lcd.print("openDog V3");
+    // lcd.setCursor(0, 1);
+    // lcd.print("S:0  C:0");
+
+    SerialMon.println("init");
+
+    if (CrashReport) SerialMon.print(CrashReport);
+
+    delay(1000);
+
+    OdriveInit1();
+
+    delay(1000);
+
+    // applyOffsets1();
+    // applyOffsets2();
+
+    // delay(1000);
 
 }  // end of setup
 
@@ -170,69 +169,135 @@ void loop() {
     currentMillis = millis();
     if (currentMillis - previousMillis >= 10) {  // start timed event
 
+        SerialMon.println("==============================");
+
         previousMillis = currentMillis;
-
-        if (mydata_remote.toggleBottom == 1) {
-            // read IMU
-            Wire.begin();
-            accelgyro.initialize();
-            accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-
-            AccelX = ax;
-            AccelY = ay;
-            AccelZ = az;
-            GyroX = Gyr_Gain * (gx);
-            GyroY = Gyr_Gain * (gy) * -1;
-            GyroZ = Gyr_Gain * (gz);
-
-            AccelY = (atan2(AccelY, AccelZ) * 180 / PI);
-            AccelX = (atan2(AccelX, AccelZ) * 180 / PI);
-
-            float dt = 0.01;
-            float K = 0.9;
-            float A = K / (K + dt);
-
-            mixX = A * (mixX + GyroX * dt) + (1 - A) * AccelY;
-            mixY = A * (mixY + GyroY * dt) + (1 - A) * AccelX;
-
-            IMUpitch = mixX + 2.7;  // trim IMU to zero
-            IMUroll = mixY - 5;
-        } else {
-            // ignore IMU data
-            Wire.end();
-            IMUpitch = 0;  // IMU data is zeero, do not read IMU
-            IMUroll = 0;
-        }
 
         // check loop is actually running the speed we want
         // loopTime = currentMillis - prevLoopTime;
         // prevLoopTime = currentMillis;
-        // Serial.println(loopTime);
+        // SerialMon.printf("loop time: %d\n", loopTime);
+
+        SerialMon.printf("SerialUSB.available %d\n", SerialUSB.available());
 
         // check for radio data
-        if (radio.available()) {
-            radio.read(&mydata_remote, sizeof(RECEIVE_DATA_STRUCTURE));
-            remoteMillis = currentMillis;
+        if (SerialUSB.available()) {
+            char buf[128];
+            // SerialUSB.readBytesUntil('\n', buf, sizeof(buf));
+            SerialUSB.readBytes(buf, sizeof(buf));
+
+            auto message = MotionProtocol::GetMessage(buf);
+
+            // SerialMon.printf("%d\n", message->type());
+
+            if (message->type() == MotionProtocol::MessageType::MessageType_REMOTE) {
+                SerialMon.println("Recieved remote data");
+
+                auto remote_data = message->remote();
+                remoteMillis = currentMillis;
+                remoteState = true;
+
+                // if (remote_data->toggle_bottom() == 1) {
+                //     // read IMU
+                //     Wire.begin();
+                //     accelgyro.initialize();
+                //     accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+
+                //     AccelX = ax;
+                //     AccelY = ay;
+                //     AccelZ = az;
+                //     GyroX = Gyr_Gain * (gx);
+                //     GyroY = Gyr_Gain * (gy) * -1;
+                //     GyroZ = Gyr_Gain * (gz);
+
+                //     AccelY = (atan2(AccelY, AccelZ) * 180 / PI);
+                //     AccelX = (atan2(AccelX, AccelZ) * 180 / PI);
+
+                //     float dt = 0.01;
+                //     float K = 0.9;
+                //     float A = K / (K + dt);
+
+                //     mixX = A * (mixX + GyroX * dt) + (1 - A) * AccelY;
+                //     mixY = A * (mixY + GyroY * dt) + (1 - A) * AccelX;
+
+                //     IMUpitch = mixX + 2.7;  // trim IMU to zero
+                //     IMUroll = mixY - 5;
+                // } else {
+                //     // ignore IMU data
+                //     Wire.end();
+                //     IMUpitch = 0;  // IMU data is zeero, do not read IMU
+                //     IMUroll = 0;
+                // }
+
+
+                int mode = remote_data->mode();
+
+                if (mode == 1) {  // init ODrives with low gains
+                    SerialMon.println("Init Odrives mode 1");
+                    OdriveInit1();
+                } else if (mode == 2) {  // default to 45' shoulder and knees
+                    SerialMon.println("Knees mode 2");
+                    applyOffsets1();
+                } else if (mode == 3) {  // default to hip position
+                    SerialMon.println("Shoulders mode 3");
+                    applyOffsets2();
+                } else if (mode == 4) {  // turn up gains
+                    SerialMon.println("Modify Gains mode 4");
+                    modifyGains();
+                } else if (mode == 5) {  // turn up gains
+                    SerialMon.println("Kinematics mode 5");
+                    interpFlag = 0;
+                    previousInterpMillis = currentMillis;
+                    runMode = 1;
+                } else if (mode == 6) {  // turn up gains
+                    SerialMon.println("Walking Mode 6");
+                    interpFlag = 0;
+                    previousInterpMillis = currentMillis;
+                    runMode = 2;
+                } else if (mode == 9) {  // turn up gains
+                    SerialMon.println("Interp Test");
+                    interpFlag = 0;
+                    previousInterpMillis = currentMillis;
+                    runMode = 9;
+                } else if (mode == 10) {  // turn up gains
+                    SerialMon.println("Going Home Mode 10");
+                    interpFlag = 0;
+                    previousInterpMillis = currentMillis;
+                    runMode = 10;
+                }
+
+
+                // Handle motor enable is 0
+                if (remote_data->toggle_top() == 0) {
+                    enabled = false;
+                } else {
+                    enabled = true;
+                }
+
+                // threshold remote data
+                LFB = thresholdStick(remote_data->lfb());
+                LLR = thresholdStick(remote_data->llr());
+                LT = remote_data->lt();
+                RFB = thresholdStick(remote_data->rfb());
+                RLR = thresholdStick(remote_data->rlr());
+                RT = remote_data->rt();
+
+                SerialMon.printf("lt %d\n", remote_data->lt());
+
+                SerialUSB.write("OK\n");
+            }
         }
 
-        // is the remote disconnected for too long ?
-        if (currentMillis - remoteMillis > 500) {
-            remoteState = 0;
-        } else {
-            remoteState = 1;
+        // // is the remote disconnected for too long ?
+        if (remoteState && currentMillis - remoteMillis > 500) {
+            remoteState = false;
+            SerialMon.println("Did not recieve remote data within timeout");
         }
 
-        // threshold remote data
-        // some are reversed based on stick wiring in remote
-        RFB = (thresholdStick(mydata_remote.RFB)) * -1;
-        RLR = (thresholdStick(mydata_remote.RLR));
-        RT = thresholdStick(mydata_remote.RT);
-        LFB = (thresholdStick(mydata_remote.LFB)) * -1;
-        LLR = thresholdStick(mydata_remote.LLR);
-        LT = thresholdStick(mydata_remote.LT);
+        SerialMon.printf("remoteState %d\n", remoteState);
 
         // stop the dog if the remote becomes disconnected
-        if (remoteState == 0) {
+        if (!remoteState) {
             RFB = 0;
             RLR = 0;
             RT = 0;
@@ -241,126 +306,7 @@ void loop() {
             LT = 0;
         }
 
-        // mode select
-
-        if (mydata_remote.menuUp == 1 && menuFlag == 0) {
-            menuFlag = 1;
-            mode = mode + 1;
-            mode = constrain(mode, 0, 10);
-        } else if (mydata_remote.menuDown == 1 && menuFlag == 0) {
-            menuFlag = 1;
-            mode = mode - 1;
-            mode = constrain(mode, 0, 10);
-        } else if (mydata_remote.menuDown == 0 && mydata_remote.menuUp == 0) {
-            menuFlag = 0;
-        }
-
-        if (mode != modeOld) {  // only update the LCD if the data has changed
-            lcd.setCursor(0, 1);
-            lcd.print("    ");
-            lcd.setCursor(0, 1);
-            lcd.print("S:");
-            lcd.print(mode);
-        }
-        modeOld = mode;  // bookmark previous data so we can see if it's changed
-
-        if (mydata_remote.Select == 1) {
-            modeConfirm = mode;   // make the actual mode be the potential mode when the select button is pressed
-            lcd.setCursor(5, 1);  // display current mode on LCD
-            lcd.print("    ");
-            lcd.setCursor(5, 1);
-            lcd.print("C:");
-            lcd.print(modeConfirm);
-        }
-
-        // display remote connection state
-        if (remoteState != remoteStateOld) {
-            if (remoteState == 0) {
-                lcd.setCursor(13, 0);
-                lcd.print("N");
-            } else if (remoteState == 1) {
-                lcd.setCursor(13, 0);
-                lcd.print("C");
-            }
-        }
-        remoteStateOld = remoteState;
-
-        // display motor enable state
-
-        if (mydata_remote.toggleTop != toggleTopOld) {
-            if (mydata_remote.toggleTop == 1) {
-                lcd.setCursor(15, 0);
-                lcd.print("E");
-            } else if (mydata_remote.toggleTop == 0) {
-                lcd.setCursor(15, 0);
-                lcd.print("D");
-            }
-        }
-        toggleTopOld = mydata_remote.toggleTop;
-
-        // ****** MAIN MENU *******
-
-        if (mydata_remote.Select == 0) {  // make sure the button is released before it can be pressed again
-            modeConfirmFlag = 0;
-        }
-
-        if (modeConfirm == 1 && modeConfirmFlag == 0 && mydata_remote.Select == 1) {  // init ODrives with low gains
-            Serial.println("Init Odrives mode 1");
-            OdriveInit1();
-            modeConfirmFlag = 1;
-        }
-
-        else if (modeConfirm == 2 && modeConfirmFlag == 0 && mydata_remote.Select == 1) {  // default to 45' shoulder and knees
-            Serial.println("Knees mode 2");
-            applyOffsets1();
-            modeConfirmFlag = 1;
-        }
-
-        else if (modeConfirm == 3 && modeConfirmFlag == 0 && mydata_remote.Select == 1) {  // default to hip position
-            Serial.println("Shoulders mode 3");
-            applyOffsets2();
-            modeConfirmFlag = 1;
-        }
-
-        else if (modeConfirm == 4 && modeConfirmFlag == 0 && mydata_remote.Select == 1) {  // turn up gains
-            Serial.println("Modify Gains mode 4");
-            modifyGains();
-            modeConfirmFlag = 1;
-        }
-
-        else if (modeConfirm == 5 && modeConfirmFlag == 0 && mydata_remote.Select == 1) {  // turn up gains
-            Serial.println("Kinematics mode 5");
-            interpFlag = 0;
-            previousInterpMillis = currentMillis;
-            runMode = 1;
-            modeConfirmFlag = 1;
-        }
-
-        else if (modeConfirm == 6 && modeConfirmFlag == 0 && mydata_remote.Select == 1) {  // turn up gains
-            Serial.println("Walking Mode 6");
-            interpFlag = 0;
-            previousInterpMillis = currentMillis;
-            runMode = 2;
-            modeConfirmFlag = 1;
-        }
-
-        else if (modeConfirm == 10 && modeConfirmFlag == 0 && mydata_remote.Select == 1) {  // turn up gains
-            Serial.println("Going Home Mode 10");
-            interpFlag = 0;
-            previousInterpMillis = currentMillis;
-            runMode = 10;
-            modeConfirmFlag = 1;
-        }
-
-        else if (modeConfirm == 9 && modeConfirmFlag == 0 && mydata_remote.Select == 1) {  // turn up gains
-            Serial.println("Interp Test");
-            interpFlag = 0;
-            previousInterpMillis = currentMillis;
-            runMode = 9;
-            modeConfirmFlag = 1;
-        }
-
-        // **** END OF MAIN MENU ****
+        SerialMon.printf("RFB: %d, RLR: %d, RT: %d, LFB: %d, LLR: %d, LT: %d\n", RFB, RLR, RT, LFB, LLR, LT);
 
         if (runMode == 10) {  // put the legs back on the stand
 
@@ -376,13 +322,13 @@ void loop() {
             // ** inverse kinematics demo **
 
             // scale sticks to mm
-            RFB = map(RFB, -462, 462, -100, 100);
-            RLR = map(RLR, -462, 462, -100, 100);
-            RT = map(RT, -462, 462, 240, 440);
+            RFB = map(RFB, -128, 128, -100, 100);
+            RLR = map(RLR, -128, 128, -100, 100);
+            RT = map(RT, -128, 128, 240, 440);
             RT = constrain(RT, 240, 380);
-            LFB = map(LFB, -462, 462, -15, 15);
-            LLR = map(LLR, -462, 462, -15, 15);
-            LT = map(LT, -462, 462, -20, 20);
+            LFB = map(LFB, -128, 128, -15, 15);
+            LLR = map(LLR, -128, 128, -15, 15);
+            LT = map(LT, -128, 128, -20, 20);
 
             // filter sticks
             RFBFiltered = filter(RFB, RFBFiltered, 40);
@@ -402,25 +348,28 @@ void loop() {
         else if (runMode == 2) {
             // simple walking
 
-            RFB = map(RFB, -462, 462, -50, 50);  // mm
-            RLR = map(RLR, -462, 462, -25, 25);  // mm
-            LT = map(LT, -462, 462, -25, 25);    // degrees
+            RFB = map(RFB, -128, 128, -50, 50);  // mm
+            RLR = map(RLR, -128, 128, -25, 25);  // mm
+            LT = map(LT, 0, 255, 0, 25);    // degrees
 
             RFBFiltered = filter(RFB, RFBFiltered, 15);
             RLRFiltered = filter(RLR, RLRFiltered, 15);
             LTFiltered = filter(LT, LTFiltered, 15);
 
-            longLeg1 = 340;
-            shortLeg1 = 200;
-            longLeg2 = 340;
-            shortLeg2 = 200;
+            longLeg1 = maxLegHeight;
+            shortLeg1 = minLegHeight;
+            longLeg2 = maxLegHeight;
+            shortLeg2 = minLegHeight;
 
             footOffset = 0;
             timer1 = 80;  // FB gait timer  80
             // timer2 = 75;   // LR gait timer
             // timer3 = 75;   // LR gait timer
 
-            if (RFBFiltered > -0.1 && RFBFiltered < 0.1 && RLRFiltered > -0.1 && RLRFiltered < 0.1 && LTFiltered > -0.1 && LTFiltered < 0.1) {  // controls are centred or near enough
+            SerialMon.printf("RFBFiltered: %f RLRFiltered: %f LTFiltered: %f\n", RFBFiltered, RLRFiltered, LTFiltered);
+
+            if (abs(RFBFiltered) < 0.1 && abs(RLRFiltered) < 0.1 && abs(LTFiltered) < 0.1) {  // controls are centred or near enough
+                SerialMon.println("STANDING STILL");
 
                 // position legs a default standing positionS
                 legLength1 = longLeg1;
@@ -441,6 +390,8 @@ void loop() {
 
             // walking
             else {
+                SerialMon.printf("WALKING - %d\n", stepFlag);
+
                 if (stepFlag == 0 && currentMillis - previousStepMillis > timerScale) {
                     legLength1 = shortLeg1;
                     legLength2 = longLeg2;
@@ -555,7 +506,5 @@ void loop() {
             kinematics(3, bl_RFB - legTransXFiltered, bl_RLR - legTransYFiltered, legLength1, legRollFiltered, legPitchFiltered, 0, 1, (timerScale * 0.8));  // back left
             kinematics(4, br_RFB - legTransXFiltered, br_RLR - legTransYFiltered, legLength2, legRollFiltered, legPitchFiltered, 0, 1, (timerScale * 0.8));  // back right
         }
-
     }  // end of timed loop
-
 }  // end  of main loop

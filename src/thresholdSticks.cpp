@@ -1,15 +1,16 @@
-int thresholdStick(int pos) {
-    // get zero centre position
-    pos = pos - 512;
+#include <Arduino.h>
 
+#include "common.h"
+
+int THRESHOLD = 10;
+
+int thresholdStick(int pos) {
     // threshold value for control sticks
-    if (pos > 50) {
-        pos = pos - 50;
-    } else if (pos < -50) {
-        pos = pos + 50;
-    } else {
+    if (abs(pos) <= THRESHOLD) {
         pos = 0;
     }
+
+    SerialMon.printf("pos %d %d\n", pos, map(pos, -128, 128, -512, 512));
 
     return pos;
 }

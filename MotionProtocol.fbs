@@ -1,0 +1,30 @@
+namespace MotionProtocol;
+
+enum MessageType : byte {
+    UNKNOWN = 0,
+    REMOTE = 1,
+}
+
+table Remote {
+    menu_down: int16;
+    select: int16;
+    menu_up: int16;
+    toggle_bottom: bool;
+    toggle_top: bool;
+    toggle1: bool;
+    toggle2: bool;
+    mode: int8;
+    rlr: int8;
+    rfb: int8;
+    rt: uint8;
+    llr: int8;
+    lfb: int8;
+    lt: uint8;
+}
+
+table Message {
+    type: MessageType;
+    remote: Remote;
+}
+
+root_type Message;

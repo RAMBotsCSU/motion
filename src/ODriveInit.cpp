@@ -13,98 +13,77 @@ ODriveArduino odrive5 = ODriveArduino(Serial5);
 ODriveArduino odrive6 = ODriveArduino(Serial6);
 
 
+float offsetShoulder = 0.680279;
+float offsetKnee = -1.498286;
+float offsetHip = 0.000006;
+
 // ODrive offsets from power up
 // ratio is 10:1 so 1 'turn' is 36'.
-float offSet20 = -0.1;      //ODrive 2, axis 0      // knee - right front
-float offSet30 = -0.45;      //ODrive 3, axis 0     // knee - right rear
-float offSet50 = -0.05;      //ODrive 5, axis 0     // knee - left front
-float offSet60 = -0.4;      //ODrive 6, axis 0       // knee - left rear
+// offset<odrive><axis>
+float offSet20 = offsetKnee;    // knee - right front
+float offSet30 = offsetKnee;   // knee - right rear
+float offSet50 = offsetKnee;   // knee - left front
+float offSet60 = offsetKnee;    // knee - left rear
 
-float offSet21 = -0.1;      //ODrive 2, axis 1     // shoulder - right front
-float offSet31 = 0.45;      //ODrive 3, axis 1     // shoulder - right rear
-float offSet51 = 0.66;      //ODrive 5, axis 0     // shoulder - left front
-float offSet61 =  -0.08;      //ODrive 6, axis 1     // shoulder - left rear
+float offSet21 = offsetShoulder;    // shoulder - right front
+float offSet31 = offsetShoulder;    // shoulder - right rear
+float offSet51 = offsetShoulder;    // shoulder - left front
+float offSet61 = offsetShoulder;   // shoulder - left rear
 
-float offSet10 = 0.27;      //ODrive 1, axis 0     // hips - right front
-float offSet11 = 0.1;      //ODrive 1, axis 1     // hips - right back
-float offSet40 = 0.07;      //ODrive 4, axis 0     // hips - left front
-float offSet41 = 0.35;      //ODrive 4, axis 1     // hips - left back
+float offSet10 = offsetHip;    // hips - right front
+float offSet11 = offsetHip;     // hips - right back
+float offSet40 = offsetHip;    // hips - left front
+float offSet41 = offsetHip;    // hips - left back
 
 // init hips
 
-int requested_state;
+int requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL;
+float current_lim = 20.0;
 
-void OdriveInit1() {
-    Serial.println("ODrive 1");
-
+void InitODrive(ODriveArduino &odrive, HardwareSerial &serial) {
     for (int axis = 0; axis < 2; ++axis) {
         // Serial1 << "w axis" << axis << ".controller.config.vel_limit " << 6000.0f << '\n';          // *** Velocity limits should be set to infinite through the ODrive tool, this stops the motors disarming under certain situations ***
-        Serial1 << "w axis" << axis << ".motor.config.current_lim " << 20.0f << '\n';
 
-        requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL;
-        Serial << "Axis" << axis << ": Requesting state " << requested_state << '\n';
-        odrive1.runState(axis, requested_state, false);  // don't wait
+        // reset errors
+        serial.printf("w axis%d.error 0\n", axis);
+        serial.printf("w axis%d.motor.error 0\n", axis);
+        serial.printf("w axis%d.encoder.error 0\n", axis);
+        serial.printf("w axis%d.controller.error 0\n", axis);
+
+        serial << "w axis" << axis << ".motor.config.current_lim " << current_lim << '\n';
+
+        bool temp = odrive.runState(axis, requested_state, false);  // don't wait
+
+        SerialMon.printf("Axis %d requesting state %d - %d\n", axis, requested_state, temp);
     }
+}
 
-    Serial.println("ODrive 2");
+void OdriveInit1() {
 
-    for (int axis = 0; axis < 2; ++axis) {
-        // Serial2 << "w axis" << axis << ".controller.config.vel_limit " << 6000.0f << '\n';
-        Serial2 << "w axis" << axis << ".motor.config.current_lim " << 20.0f << '\n';
+    SerialMon.println("ODrive 1");
+    InitODrive(odrive1, Serial1);
 
-        requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL;
-        Serial2 << "Axis" << axis << ": Requesting state " << requested_state << '\n';
-        odrive2.runState(axis, requested_state, false);  // don't wait
-    }
+    SerialMon.println("ODrive 2");
+    InitODrive(odrive2, Serial2);
 
-    Serial.println("ODrive 3");
+    SerialMon.println("ODrive 3");
+    InitODrive(odrive3, Serial3);
 
-    for (int axis = 0; axis < 2; ++axis) {
-        // Serial3 << "w axis" << axis << ".controller.config.vel_limit " << 6000.0f << '\n';
-        Serial3 << "w axis" << axis << ".motor.config.current_lim " << 20.0f << '\n';
+    SerialMon.println("ODrive 4");
+    InitODrive(odrive4, Serial4);
 
-        requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL;
-        Serial3 << "Axis" << axis << ": Requesting state " << requested_state << '\n';
-        odrive3.runState(axis, requested_state, false);  // don't wait
-    }
+    SerialMon.println("ODrive 5");
+    InitODrive(odrive5, Serial5);
 
-    Serial.println("ODrive 4");
+    SerialMon.println("ODrive 6");
+    InitODrive(odrive6, Serial6);
 
-    for (int axis = 0; axis < 2; ++axis) {
-        // Serial4 << "w axis" << axis << ".controller.config.vel_limit " << 6000.0f << '\n';
-        Serial4 << "w axis" << axis << ".motor.config.current_lim " << 20.0f << '\n';
-
-        requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL;
-        Serial4 << "Axis" << axis << ": Requesting state " << requested_state << '\n';
-        odrive4.runState(axis, requested_state, false);  // don't wait
-    }
-
-    Serial.println("ODrive 5");
-
-    for (int axis = 0; axis < 2; ++axis) {
-        // Serial5 << "w axis" << axis << ".controller.config.vel_limit " << 6000.0f << '\n';
-        Serial5 << "w axis" << axis << ".motor.config.current_lim " << 20.0f << '\n';
-
-        requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL;
-        Serial5 << "Axis" << axis << ": Requesting state " << requested_state << '\n';
-        odrive5.runState(axis, requested_state, false);  // don't wait
-    }
-
-    Serial.println("ODrive 6");
-
-    for (int axis = 0; axis < 2; ++axis) {
-        // Serial6 << "w axis" << axis << ".controller.config.vel_limit " << 6000.0f << '\n';
-        Serial6 << "w axis" << axis << ".motor.config.current_lim " << 20.0f << '\n';
-
-        requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL;
-        Serial6 << "Axis" << axis << ": Requesting state " << requested_state << '\n';
-        odrive6.runState(axis, requested_state, false);  // don't wait
-    }
+    SerialMon.println("ODRIVE INIT COMPLETE");
 }
 
 void modifyGains() {  // this function turns up the gains when it is executed (menu option 4 via the remote)
 
-    Serial.println("modfy gains");
+    SerialMon.println("modfy gains");
 
     float posGainKnee = 15.0;
     float posGainHips = 70.0;
@@ -194,56 +173,44 @@ void applyOffsets2() {
 }
 
 void driveJoints(int joint, float pos) {
+    SerialMon.printf("[DRIVEJOINTS] %d to %f\n", joint, pos);
     // takes into account the original setup offsets for motor postions, and also turns around directions so they are consistent
     // also constrains the motion limts for each joint
 
-    if (mydata_remote.toggleTop == 1) {  // ************** only do it if the motor enable is on via teh remote *****************
+    pos = constrain(pos, -2.5, 2.5);
 
-        // knees
+    // knees
 
-        if (joint == 20) {
-            pos = constrain(pos, -2.5, 2.5);
-            odrive2.setPosition(0, pos + offSet20);  // knee - right front
-        } else if (joint == 30) {
-            pos = constrain(pos, -2.5, 2.5);
-            odrive3.setPosition(0, (pos * -1) + offSet30);  // knee - right back
-        } else if (joint == 50) {
-            pos = constrain(pos, -2.5, 2.5);
-            odrive5.setPosition(0, (pos * -1) + offSet50);  // knee - left front
-        } else if (joint == 60) {
-            pos = constrain(pos, -2.5, 2.5);
-            odrive6.setPosition(0, pos + offSet60);  // knee - left back
-        }
+    if (joint == 20) {
+        odrive2.setPosition(0, pos + offSet20);  // knee - right front
+    } else if (joint == 30) {
+        odrive3.setPosition(0, (pos * -1) + offSet30);  // knee - right back
+    } else if (joint == 50) {
+        odrive5.setPosition(0, (pos * -1) + offSet50);  // knee - left front
+    } else if (joint == 60) {
+        odrive6.setPosition(0, pos + offSet60);  // knee - left back
+    }
 
-        // shoulder
+    // shoulder
 
-        else if (joint == 21) {
-            pos = constrain(pos, -2.5, 2.5);
-            odrive2.setPosition(1, (pos * -1) + offSet21);  // shoulder - right front
-        } else if (joint == 31) {
-            pos = constrain(pos, -2.5, 2.5);
-            odrive3.setPosition(1, pos + offSet31);  // shoulder - right rear
-        } else if (joint == 51) {
-            pos = constrain(pos, -2.5, 2.5);
-            odrive5.setPosition(1, pos + offSet51);  // shoulder - left front
-        } else if (joint == 61) {
-            pos = constrain(pos, -2.5, 2.5);
-            odrive6.setPosition(1, (pos * -1) + offSet61);  // shoulder - left rear
-        }
+    else if (joint == 21) {
+        odrive2.setPosition(1, (pos * -1) + offSet21);  // shoulder - right front
+    } else if (joint == 31) {
+        odrive3.setPosition(1, pos + offSet31);  // shoulder - right rear
+    } else if (joint == 51) {
+        odrive5.setPosition(1, pos + offSet51);  // shoulder - left front
+    } else if (joint == 61) {
+        odrive6.setPosition(1, (pos * -1) + offSet61);  // shoulder - left rear
+    }
 
-        // hips
-        else if (joint == 10) {
-            pos = constrain(pos, -2.5, 2.5);
-            odrive1.setPosition(0, pos + offSet10);  // hips - right front
-        } else if (joint == 11) {
-            pos = constrain(pos, -2.5, 2.5);
-            odrive1.setPosition(1, (pos * -1) + offSet11);  // hips - right rear
-        } else if (joint == 40) {
-            pos = constrain(pos, -2.5, 2.5);
-            odrive4.setPosition(0, pos + offSet40);  // hips - knee - left front
-        } else if (joint == 41) {
-            pos = constrain(pos, -2.5, 2.5);
-            odrive4.setPosition(1, (pos * -1) + offSet41);  // hips - left rear
-        }
+    // hips
+    else if (joint == 10) {
+        odrive1.setPosition(0, pos + offSet10);  // hips - right front
+    } else if (joint == 11) {
+        odrive1.setPosition(1, (pos * -1) + offSet11);  // hips - right rear
+    } else if (joint == 40) {
+        odrive4.setPosition(0, pos + offSet40);  // hips - left front
+    } else if (joint == 41) {
+        odrive4.setPosition(1, (pos * -1) + offSet41);  // hips - left rear
     }
 }

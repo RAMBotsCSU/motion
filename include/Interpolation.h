@@ -6,21 +6,26 @@
 class Interpolation {
    public:
     rampInt myRamp;
-    int interpolationFlag = 0;
-    int savedValue;
+    bool interpolationFlag = false;
+    float savedValue;
 
-    int go(int input, int duration) {
+    float go(float input, int duration) {
         if (input != savedValue) {  // check for new data
-            interpolationFlag = 0;
+            interpolationFlag = false;
         }
         savedValue = input;  // bookmark the old value
 
-        if (interpolationFlag == 0) {                         // only do it once until the flag is reset
-            myRamp.go(input, duration, LINEAR, ONCEFORWARD);  // start interpolation (value to go to, duration)
-            interpolationFlag = 1;
+        // SerialMon.printf("Interpolation go input=%f duration=%d interpolationFlag=%d savedValue=%f\n", input, duration, interpolationFlag, savedValue);
+
+        if (interpolationFlag == false) {                         // only do it once until the flag is reset
+            myRamp.go((long)(input * 1000), duration, LINEAR, ONCEFORWARD);  // start interpolation (value to go to, duration)
+            interpolationFlag = true;
         }
 
-        int output = myRamp.update();
+        float output = (float)myRamp.update() / 1000;
+
+        // SerialMon.printf("Interpolation go output=%f\n", output);
+
         return output;
     }
 };  // end of class

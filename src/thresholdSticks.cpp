@@ -10,7 +10,7 @@ int thresholdStick(int pos) {
         pos = 0;
     }
 
-    SerialMon.printf("pos %d %d\n", pos, map(pos, -128, 128, -512, 512));
+    // SerialMon.printf("pos %d %d\n", pos, map(pos, -128, 128, -512, 512));
 
     return pos;
 }

@@ -22,8 +22,10 @@ Interpolation interpBLY;
 Interpolation interpBLZ;
 Interpolation interpBLT;
 
+const float conversion = 0.02777777777777777777777777777778;  // factor for converting degrees to motor turns used by the ODrive
+
 void kinematics(int leg, float xIn, float yIn, float zIn, float roll, float pitch, float yawIn, int interOn, int dur) {
-    SerialMon.printf("[KINEMATICS] leg: %d, xIn: %.2f, yIn: %.2f, zIn: %.2f, roll: %.2f, pitch: %.2f, yawIn: %.2f, interOn: %d, dur: %d\n", leg, xIn, yIn, zIn, roll, pitch, yawIn, interOn, dur);
+    // SerialMon.printf("[KINEMATICS] leg: %d, xIn: %.2f, yIn: %.2f, zIn: %.2f, roll: %.2f, pitch: %.2f, yawIn: %.2f, interOn: %d, dur: %d\n", leg, xIn, yIn, zIn, roll, pitch, yawIn, interOn, dur);
 
     // leg 1  : front left
     // leg 2  : front right
@@ -44,7 +46,7 @@ void kinematics(int leg, float xIn, float yIn, float zIn, float roll, float pitc
     float shoulderAngle2Degrees;
     float z2;
 
-// side plane of individual leg only
+    // side plane of individual leg only
     const int shinLength = 200;
     const int thighLength = 200;
     float z3;
@@ -57,9 +59,9 @@ void kinematics(int leg, float xIn, float yIn, float zIn, float roll, float pitc
     float kneeAngle;
     float kneeAngleDegrees;
 
-// *** ROTATION AXIS
+    // *** ROTATION AXIS
 
-// roll axis
+    // roll axis
     const int bodyWidth = 59;         // half the distance between the hip  pivots (the front)
     float legDiffRoll;                // differnece in height for each leg
     float bodyDiffRoll;               // how much shorter the 'virtual body' gets
@@ -72,7 +74,7 @@ void kinematics(int leg, float xIn, float yIn, float zIn, float roll, float pitc
     float zz1;                        // new height for leg to pass onto the next bit of code
     float yy1;                        // new position for leg to move sideways
 
-// pitch axis
+    // pitch axis
     const int bodyLength = 272;        // half the distance between shoulder pivots  (the side)
     float legDiffPitch;                // differnece in height for each leg
     float bodyDiffPitch;               // how much shorter the 'virtual body' gets
@@ -151,11 +153,9 @@ void kinematics(int leg, float xIn, float yIn, float zIn, float roll, float pitc
         yaw = yawIn;
     }
 
-    // **** START INVERSE KINEMATICS CALCS ****
+    // SerialMon.printf("[KINEMATICS_INTERP] %d x=%.2f, y=%.2f, z=%.2f, yaw=%.2f interpFlag=%d currentMillis=%d previousInterpMillis=%d\n", leg, x, y, z, yaw, interpFlag, currentMillis, previousInterpMillis);
 
-    // yy3 = y;
-    // zz2 = z;
-    // xx3 = x;
+    // **** START INVERSE KINEMATICS CALCS ****
 
     // ** YAW AXIS **
 
@@ -177,7 +177,7 @@ void kinematics(int leg, float xIn, float yIn, float zIn, float roll, float pitc
         x = x + bodyLength;
     }
 
-    // calc existing angle of leg from cetre
+    // calc existing angle of leg from center
     existingAngle = atan(y / x);
 
     // calc radius from centre
@@ -187,7 +187,7 @@ void kinematics(int leg, float xIn, float yIn, float zIn, float roll, float pitc
     demandYaw = existingAngle + yawAngle;
 
     // calc new X and Y based on demand yaw angle
-    xx3 = radius * cos(demandYaw);  // calc new X and Y based on new yaw angle
+    xx3 = radius * cos(demandYaw);
     yy3 = radius * sin(demandYaw);
 
     // remove the offsets so we pivot around 0/0 x/y
@@ -208,8 +208,8 @@ void kinematics(int leg, float xIn, float yIn, float zIn, float roll, float pitc
     // ** PITCH AXIS ***
 
     if (leg == 1 || leg == 2) {
-        pitch = pitch * -1;
-        xx3 = xx3 * -1;
+        pitch = -pitch;
+        xx3 = -xx3;
     }
 
     // convert pitch to degrees
@@ -241,22 +241,19 @@ void kinematics(int leg, float xIn, float yIn, float zIn, float roll, float pitc
     xx1 = sin(footWholeAnglePitch) * zz2a;
 
     if (leg == 1 || leg == 2) {
-        xx1 = xx1 * -1;
+        xx1 = -xx1;
     }
 
     // *** ROLL AXIS ***
 
     // turn around roll angle for each side of the robot
     if (leg == 2 || leg == 3) {
-        roll = 0 - roll;
-        yy3 = yy3 * -1;
-
-    } else if (leg == 1 || leg == 4) {
-        roll = 0 + roll;
+        roll = -roll;
+        yy3 = -yy3;
     }
 
     // convert roll angle to radians
-    rollAngle = (PI / 180) * roll;  // covert degrees from the stick to radians
+    rollAngle = (PI / 180) * roll;
 
     // calc the top triangle sides
     legDiffRoll = sin(rollAngle) * bodyWidth;
@@ -290,8 +287,8 @@ void kinematics(int leg, float xIn, float yIn, float zIn, float roll, float pitc
     // first triangle
 
     if (leg == 1 || leg == 4) {  // reverse the calcs for each side of the robot
-        hipOffset = hipOffset * -1;
-        yy1 = yy1 * -1;
+        hipOffset = -hipOffset;
+        yy1 = -yy1;
     }
 
     yy1 = yy1 + hipOffset;  // add on hip offset because there is default distance in Y
@@ -333,8 +330,6 @@ void kinematics(int leg, float xIn, float yIn, float zIn, float roll, float pitc
     kneeAngleDegrees = kneeAngle * (180 / PI);            // degrees
 
     // write to joints
-
-    float conversion = 0.02777777777777777777777777777778;  // factor for converting degrees to motor turns used by the ODrive
 
     float shoulderAngle1Counts, shoulderAngle2Counts, shoulderAngleCounts, kneeAngleCounts, hipAngleCounts;
 

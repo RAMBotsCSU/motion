@@ -12,46 +12,51 @@ ODriveArduino odrive4 = ODriveArduino(Serial4);
 ODriveArduino odrive5 = ODriveArduino(Serial5);
 ODriveArduino odrive6 = ODriveArduino(Serial6);
 
-
+// kinematics 0 position offsets
 float offsetShoulder = 0.744587;
 float offsetKnee = -1.489174;
 float offsetHip = 0.000006;
 
-// ODrive offsets from power up
-// ratio is 10:1 so 1 'turn' is 36'.
-
+// odrive startup 0 position offsets
+float startingPositions[6][2];
 
 int requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL;
 float current_lim = 20.0;
 
-float startingPositions[6][2];
-
 void InitODrive(ODriveArduino &odrive, HardwareSerial &serial, int odriveIndex) {
     for (int axis = 0; axis < 2; ++axis) {
-        // Serial1 << "w axis" << axis << ".controller.config.vel_limit " << 6000.0f << '\n';          // *** Velocity limits should be set to infinite through the ODrive tool, this stops the motors disarming under certain situations ***
+        serial.setTimeout(100);
 
+        // check error
         serial.printf("r axis%d.error\n", axis);
         int err = serial.readStringUntil('\n').toInt();
-
         SerialMon.printf("Axis %d error: %d\n", axis, err);
 
         // reset errors
-        serial.printf("w axis%d.error 0\n", axis);
-        serial.printf("w axis%d.motor.error 0\n", axis);
-        serial.printf("w axis%d.encoder.error 0\n", axis);
         serial.printf("w axis%d.controller.error 0\n", axis);
+        serial.printf("w axis%d.encoder.error 0\n", axis);
+        serial.printf("w axis%d.motor.error 0\n", axis);
+        serial.printf("w axis%d.error 0\n", axis);
+        serial.printf("sc\n", axis);
 
-        serial << "w axis" << axis << ".motor.config.current_lim " << current_lim << '\n';
+        // check error
+        serial.printf("r axis%d.error\n", axis);
+        err = serial.readStringUntil('\n').toInt();
+        SerialMon.printf("Axis %d error after reset: %d\n", axis, err);
 
-        bool state = odrive.runState(axis, requested_state, false);
+        // config
+        serial.printf("w axis%d.motor.config.current_lim %f\n", axis, current_lim);
+
+        // closed loop
+        odrive.runState(axis, requested_state, false);
+        serial.printf("r axis%d.current_state\n", axis);
+        int state = serial.readStringUntil('\n').toInt();
         SerialMon.printf("Axis %d requesting state %d - %d\n", axis, requested_state, state);
 
-        // set the current position to the 0 position
-        // serial.printf("w axis%d.encoder.set_linear_count 0\n", axis);
-
+        // Get starting position
         float pos = odrive.getPosition(axis);
-        SerialMon.printf("Axis %d position: %f\n", axis, pos);
         startingPositions[odriveIndex][axis] = pos;
+        SerialMon.printf("Axis %d position: %f\n", axis, pos);
     }
 }
 
@@ -148,44 +153,73 @@ void modifyGains() {  // this function turns up the gains when it is executed (m
 }
 
 void driveJoints(int joint, float pos) {
-    SerialMon.printf("[DRIVEJOINTS] %d to %f\n", joint, pos);
+    // SerialMon.printf("[DRIVEJOINTS] %d to %f\n", joint, pos);
     // takes into account the original setup offsets for motor postions, and also turns around directions so they are consistent
     // also constrains the motion limts for each joint
 
     pos = constrain(pos, -2.5, 2.5);
 
+    // return;
+
     // knees
 
     if (joint == 20) {
         odrive2.setPosition(0, pos + offsetKnee + startingPositions[1][0]);  // knee - right front
+        // SerialMon.printf("Set position for joint %d: axis 0, position %f, pos=%f\n", joint, pos + offsetKnee + startingPositions[1][0], pos);
+        // currentPos = odrive2.getPosition(0);
     } else if (joint == 30) {
         odrive3.setPosition(0, pos + offsetKnee + startingPositions[2][0]);  // knee - right back
+        // SerialMon.printf("Set position for joint %d: axis 0, position %f, pos=%f\n", joint, pos + offsetKnee + startingPositions[2][0], pos);
+        // currentPos = odrive3.getPosition(0);
     } else if (joint == 50) {
-        odrive5.setPosition(0, pos + offsetKnee + startingPositions[4][0]);  // knee - left front
+        odrive5.setPosition(0, -pos - offsetKnee + startingPositions[4][0]);  // knee - left front
+        // SerialMon.printf("Set position for joint %d: axis 0, position %f, pos=%f\n", joint, pos + offsetKnee + startingPositions[4][0], pos);
+        // SerialMon.printf("Set position for joint %d: axis 0, position %f, pos=%f\n", joint, -pos - offsetKnee + startingPositions[4][0], pos);
+        // currentPos = odrive5.getPosition(0);
     } else if (joint == 60) {
-        odrive6.setPosition(0, pos + offsetKnee + startingPositions[5][0]);  // knee - left back
+        odrive6.setPosition(0, -pos - offsetKnee + startingPositions[5][0]);  // knee - left back
+        // SerialMon.printf("Set position for joint %d: axis 0, position %f, pos=%f\n", joint, pos + offsetKnee + startingPositions[5][0], pos);
+        // currentPos = odrive6.getPosition(0);
     }
 
     // shoulder
 
     else if (joint == 21) {
         odrive2.setPosition(1, pos + offsetShoulder + startingPositions[1][1]);  // shoulder - right front
+        // SerialMon.printf("Set position for joint %d: axis 1, position %f, pos=%f\n", joint, pos + offsetShoulder + startingPositions[1][1], pos);
+        // currentPos = odrive2.getPosition(1);
     } else if (joint == 31) {
         odrive3.setPosition(1, pos + offsetShoulder + startingPositions[2][1]);  // shoulder - right rear
+        // SerialMon.printf("Set position for joint %d: axis 1, position %f, pos=%f\n", joint, pos + offsetShoulder + startingPositions[2][1], pos);
+        // currentPos = odrive3.getPosition(1);
     } else if (joint == 51) {
-        odrive5.setPosition(1, pos + offsetShoulder + startingPositions[4][1]);  // shoulder - left front
+        odrive5.setPosition(1, -pos - offsetShoulder + startingPositions[4][1]);  // shoulder - left front
+        // SerialMon.printf("Set position for joint %d: axis 1, position %f, pos=%f\n", joint, -pos - offsetShoulder + startingPositions[4][1], pos);
+        // currentPos = odrive5.getPosition(1);
     } else if (joint == 61) {
-        odrive6.setPosition(1, pos + offsetShoulder + startingPositions[5][1]);  // shoulder - left rear
+        odrive6.setPosition(1, -pos - offsetShoulder + startingPositions[5][1]);  // shoulder - left rear
+        // SerialMon.printf("Set position for joint %d: axis 1, position %f, pos=%f\n", joint, -pos - offsetShoulder + startingPositions[5][1], pos);
+        // currentPos = odrive6.getPosition(1);
     }
 
     // hips
     else if (joint == 10) {
         odrive1.setPosition(0, pos + offsetHip + startingPositions[0][0]);  // hips - right front
+        // SerialMon.printf("Set position for joint %d: axis 0, position %f, pos=%f\n", joint, pos + offsetHip + startingPositions[0][0], pos);
+        // currentPos = odrive1.getPosition(0);
     } else if (joint == 11) {
         odrive1.setPosition(1, pos + offsetHip + startingPositions[0][1]);  // hips - right rear
+        // SerialMon.printf("Set position for joint %d: axis 1, position %f, pos=%f\n", joint, pos + offsetHip + startingPositions[0][1], pos);
+        // currentPos = odrive1.getPosition(1);
     } else if (joint == 40) {
-        odrive4.setPosition(0, pos + offsetHip + startingPositions[3][0]);  // hips - left front
+        odrive4.setPosition(0, -pos - offsetHip + startingPositions[3][0]);  // hips - left front
+        // SerialMon.printf("Set position for joint %d: axis 0, position %f, pos=%f\n", joint, pos + offsetHip + startingPositions[3][0], pos);
+        // currentPos = odrive4.getPosition(0);
     } else if (joint == 41) {
-        odrive4.setPosition(1, pos + offsetHip + startingPositions[3][1]);  // hips - left rear
+        odrive4.setPosition(1, -pos - offsetHip + startingPositions[3][1]);  // hips - left rear
+        // SerialMon.printf("Set position for joint %d: axis 1, position %f, pos=%f\n", joint, pos + offsetHip + startingPositions[3][1], pos);
+        // currentPos = odrive4.getPosition(1);
     }
+
+    // SerialMon.printf("Current position for joint %d: position %f\n", joint, currentPos);
 }

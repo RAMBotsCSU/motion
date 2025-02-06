@@ -51,6 +51,7 @@ long previousStepMillis = 0;
 int stepStartFlag = 0;
 
 int runMode = 0;
+int prevMode = 0;
 bool enabled = false;
 
 float longLeg1;
@@ -122,7 +123,8 @@ float legPitch;
 float legRollFiltered;
 float legPitchFiltered;
 
-
+#include <Ramp.h>
+ramp TESTRAMP;
 // ****************** SETUP ******************************
 void setup() {
     // initialize serial communication
@@ -137,6 +139,17 @@ void setup() {
     Serial6.begin(115200);
 
     SerialMon.begin(115200);
+
+
+    // SerialMon.print("Value start at: ");         //
+    // SerialMon.println(TESTRAMP.getValue());        // ramp object instantiate with a value of O
+
+    // SerialMon.println("Starting interpolation"); //
+    // float cum = 1.2;
+    // TESTRAMP.go((int)(cum * 100), 2000);                    // start interpolation (value to go to, duration in ms)
+    // SerialMon.println(TESTRAMP.getTarget());
+
+    // return;
 
     // LCD
     // lcd.init();
@@ -166,6 +179,12 @@ void setup() {
 // ********************* MAIN LOOP *******************************
 
 void loop() {
+    // SerialMon.print("Actual value is: ");        //
+    // float cock = (float)TESTRAMP.update() / 100;
+    // SerialMon.println(cock);          // update() return the actual interpolation value
+    // delay(100);                               //
+    // return;
+
     currentMillis = millis();
     if (currentMillis - previousMillis >= 10) {  // start timed event
 
@@ -178,7 +197,7 @@ void loop() {
         // prevLoopTime = currentMillis;
         // SerialMon.printf("loop time: %d\n", loopTime);
 
-        SerialMon.printf("SerialUSB.available %d\n", SerialUSB.available());
+        // SerialMon.printf("SerialUSB.available %d\n", SerialUSB.available());
 
         // check for radio data
         if (SerialUSB.available()) {
@@ -191,7 +210,7 @@ void loop() {
             // SerialMon.printf("%d\n", message->type());
 
             if (message->type() == MotionProtocol::MessageType::MessageType_REMOTE) {
-                SerialMon.println("Recieved remote data");
+                // SerialMon.println("Recieved remote data");
 
                 auto remote_data = message->remote();
                 remoteMillis = currentMillis;
@@ -232,38 +251,42 @@ void loop() {
 
                 int mode = remote_data->mode();
 
-                if (mode == 1) {  // init ODrives with low gains
-                    SerialMon.println("Init Odrives mode 1");
-                    OdriveInit1();
-                } else if (mode == 2) {  // default to 45' shoulder and knees
-                    SerialMon.println("Knees mode 2");
-                    applyOffsets1();
-                } else if (mode == 3) {  // default to hip position
-                    SerialMon.println("Shoulders mode 3");
-                    applyOffsets2();
-                } else if (mode == 4) {  // turn up gains
-                    SerialMon.println("Modify Gains mode 4");
-                    modifyGains();
-                } else if (mode == 5) {  // turn up gains
-                    SerialMon.println("Kinematics mode 5");
-                    interpFlag = 0;
-                    previousInterpMillis = currentMillis;
-                    runMode = 1;
-                } else if (mode == 6) {  // turn up gains
-                    SerialMon.println("Walking Mode 6");
-                    interpFlag = 0;
-                    previousInterpMillis = currentMillis;
-                    runMode = 2;
-                } else if (mode == 9) {  // turn up gains
-                    SerialMon.println("Interp Test");
-                    interpFlag = 0;
-                    previousInterpMillis = currentMillis;
-                    runMode = 9;
-                } else if (mode == 10) {  // turn up gains
-                    SerialMon.println("Going Home Mode 10");
-                    interpFlag = 0;
-                    previousInterpMillis = currentMillis;
-                    runMode = 10;
+                if(mode != prevMode) {
+                    prevMode = mode;
+
+                    if (mode == 1) {  // init ODrives with low gains
+                        SerialMon.println("Init Odrives mode 1");
+                        OdriveInit1();
+                    } else if (mode == 2) {  // default to 45' shoulder and knees
+                        SerialMon.println("Knees mode 2");
+                        // applyOffsets1();
+                    } else if (mode == 3) {  // default to hip position
+                        SerialMon.println("Shoulders mode 3");
+                        // applyOffsets2();
+                    } else if (mode == 4) {  // turn up gains
+                        SerialMon.println("Modify Gains mode 4");
+                        modifyGains();
+                    } else if (mode == 5) {  // turn up gains
+                        SerialMon.println("Kinematics mode 5");
+                        interpFlag = 0;
+                        previousInterpMillis = currentMillis;
+                        runMode = 1;
+                    } else if (mode == 6) {  // turn up gains
+                        SerialMon.println("Walking Mode 6");
+                        interpFlag = 0;
+                        previousInterpMillis = currentMillis;
+                        runMode = 2;
+                    } else if (mode == 9) {  // turn up gains
+                        SerialMon.println("Interp Test");
+                        interpFlag = 0;
+                        previousInterpMillis = currentMillis;
+                        runMode = 9;
+                    } else if (mode == 10) {  // turn up gains
+                        SerialMon.println("Going Home Mode 10");
+                        interpFlag = 0;
+                        previousInterpMillis = currentMillis;
+                        runMode = 10;
+                    }
                 }
 
 
@@ -282,7 +305,7 @@ void loop() {
                 RLR = thresholdStick(remote_data->rlr());
                 RT = remote_data->rt();
 
-                SerialMon.printf("lt %d\n", remote_data->lt());
+                // SerialMon.printf("lt %d\n", remote_data->lt());
 
                 SerialUSB.write("OK\n");
             }
@@ -294,7 +317,7 @@ void loop() {
             SerialMon.println("Did not recieve remote data within timeout");
         }
 
-        SerialMon.printf("remoteState %d\n", remoteState);
+        // SerialMon.printf("remoteState %d\n", remoteState);
 
         // stop the dog if the remote becomes disconnected
         if (!remoteState) {
@@ -304,9 +327,10 @@ void loop() {
             LFB = 0;
             LLR = 0;
             LT = 0;
+            runMode = 0;
         }
 
-        SerialMon.printf("RFB: %d, RLR: %d, RT: %d, LFB: %d, LLR: %d, LT: %d\n", RFB, RLR, RT, LFB, LLR, LT);
+        // SerialMon.printf("RFB: %d, RLR: %d, RT: %d, LFB: %d, LLR: %d, LT: %d\n", RFB, RLR, RT, LFB, LLR, LT);
 
         if (runMode == 10) {  // put the legs back on the stand
 
@@ -348,8 +372,8 @@ void loop() {
         else if (runMode == 2) {
             // simple walking
 
-            RFB = map(RFB, -128, 128, -50, 50);  // mm
-            RLR = map(RLR, -128, 128, -25, 25);  // mm
+            RFB = map(RFB, -128, 128, -40, 40);  // mm
+            RLR = map(RLR, -128, 128, -20, 20);  // mm
             LT = map(LT, 0, 255, 0, 25);    // degrees
 
             RFBFiltered = filter(RFB, RFBFiltered, 15);
@@ -362,14 +386,14 @@ void loop() {
             shortLeg2 = minLegHeight;
 
             footOffset = 0;
-            timer1 = 80;  // FB gait timer  80
+            timer1 = 200;  // FB gait timer  80
             // timer2 = 75;   // LR gait timer
             // timer3 = 75;   // LR gait timer
 
-            SerialMon.printf("RFBFiltered: %f RLRFiltered: %f LTFiltered: %f\n", RFBFiltered, RLRFiltered, LTFiltered);
+            // SerialMon.printf("RFBFiltered: %f RLRFiltered: %f LTFiltered: %f\n", RFBFiltered, RLRFiltered, LTFiltered);
 
             if (abs(RFBFiltered) < 0.1 && abs(RLRFiltered) < 0.1 && abs(LTFiltered) < 0.1) {  // controls are centred or near enough
-                SerialMon.println("STANDING STILL");
+                SerialMon.println("[WALKSTATUS] STANDING STILL");
 
                 // position legs a default standing positionS
                 legLength1 = longLeg1;
@@ -390,7 +414,7 @@ void loop() {
 
             // walking
             else {
-                SerialMon.printf("WALKING - %d\n", stepFlag);
+                SerialMon.printf("[WALKSTATUS] WALKING - %d\n", stepFlag);
 
                 if (stepFlag == 0 && currentMillis - previousStepMillis > timerScale) {
                     legLength1 = shortLeg1;
@@ -487,6 +511,8 @@ void loop() {
                 stepHyp = abs(stepLength / sin(stepAngle));  // mm
 
                 timerScale = timer1 + (stepHyp / 3.5);
+
+                // SerialMon.printf("=== stepHyp: %f, timerScale: %f\n", stepHyp, timerScale);
             }
 
             legTransX = IMUpitch * -2;

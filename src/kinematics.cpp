@@ -1,8 +1,8 @@
 #include <Arduino.h>
 
-#include "kinematics.h"
-#include "log.h"
-#include "utils.h"
+#include "kinematics.hpp"
+#include "log.hpp"
+#include "utils.hpp"
 
 // factor for converting degrees to motor turns used by the ODrive
 #define CONVERSION 0.02777777777777777777777777777778

@@ -1,8 +1,8 @@
-#include "sparky.h"
-#include "config.h"
-#include "odrive.h"
-#include "log.h"
-#include "utils.h"
+#include "sparky.hpp"
+#include "config.hpp"
+#include "odrive.hpp"
+#include "log.hpp"
+#include "utils.hpp"
 #include "MotionProtocol_generated.h"
 
 Sparky::Sparky()

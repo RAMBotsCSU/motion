@@ -1,4 +1,4 @@
-#include "leg.h"
+#include "leg.hpp"
 
 void Leg::move(JointAngles angles, float duration) {
     hip.move(angles.hip, duration);

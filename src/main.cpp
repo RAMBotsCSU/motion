@@ -10,8 +10,8 @@
 // #include "thresholdSticks.h"
 
 
-#include "sparky.h"
-#include "log.h"
+#include "sparky.hpp"
+#include "log.hpp"
 
 
 // bool remoteState = false;

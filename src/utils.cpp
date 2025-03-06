@@ -1,7 +1,5 @@
 #include <Arduino.h>
 
-// #include "utils.h"
-
 #define THRESHOLD 10
 
 int thresholdStick(int pos) {

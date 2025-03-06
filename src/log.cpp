@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
-#include "log.h"
-#include "config.h"
+#include "log.hpp"
+#include "config.hpp"
 
 void Log(const char* format, ...) {
     // sending serial data takes time, if we run the debug logger

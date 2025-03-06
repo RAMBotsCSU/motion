@@ -1,7 +1,7 @@
 #ifndef ODRIVE_H
 #define ODRIVE_H
 
-#include "axis.h"
+#include "axis.hpp"
 
 #include <HardwareSerial.h>
 #include <ODriveArduino.h>

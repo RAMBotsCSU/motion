@@ -1,8 +1,8 @@
 #ifndef LEG_H
 #define LEG_H
 
-#include "odrive.h"
-#include "kinematics.h"
+#include "odrive.hpp"
+#include "kinematics.hpp"
 
 class Leg {
 public:

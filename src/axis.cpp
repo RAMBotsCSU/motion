@@ -1,11 +1,11 @@
-#include "axis.h"
-#include "log.h"
+#include "axis.hpp"
+#include "log.hpp"
 
 Axis::Axis(HardwareSerial& _serial, ODriveArduino& _odrive, int _id) : serial(_serial), odrive(_odrive), id(_id), ramp(0) {}
 
 void Axis::init() {
     // check for errors and attempt to reset them
-    for(int i=0; i<3; ++i) {
+    for(std::size_t i=0; i<3; ++i) {
         int err = getError();
         Log("Axis error %d\n", err);
 

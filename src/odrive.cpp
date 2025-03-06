@@ -1,5 +1,5 @@
-#include "odrive.h"
-#include "log.h"
+#include "odrive.hpp"
+#include "log.hpp"
 
 bool ODrive::init() {
     // ensure serial is clear

@@ -3,9 +3,9 @@
 
 #include <Adafruit_MPU6050.h>
 
-#include "odrive.h"
-#include "leg.h"
-#include "kinematics.h"
+#include "odrive.hpp"
+#include "leg.hpp"
+#include "kinematics.hpp"
 
 
 class Sparky {

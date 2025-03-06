@@ -1,7 +1,10 @@
-#ifndef THRESHOLDSTICKS_H
-#define THRESHOLDSTICKS_H
+#ifndef UTILS_H
+#define UTILS_H
+
+#include <Arduino.h>
 
 int thresholdStick(int pos);
+
 float filter(float prevValue, float currentValue, int filter);
 
-#endif
+#endif  // UTILS_H

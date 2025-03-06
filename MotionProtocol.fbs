@@ -6,13 +6,7 @@ enum MessageType : byte {
 }
 
 table Remote {
-    menu_down: int16;
-    select: int16;
-    menu_up: int16;
-    toggle_bottom: bool;
-    toggle_top: bool;
-    toggle1: bool;
-    toggle2: bool;
+    enabled: bool;
     mode: int8;
     rlr: int8;
     rfb: int8;

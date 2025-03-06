@@ -1,40 +1,29 @@
-#include "common.h"
-#include "ODriveInit.h"
-#include "Interpolation.h"
+#include <Arduino.h>
 
-Interpolation interpFRX;        // interpolation objects
-Interpolation interpFRY;
-Interpolation interpFRZ;
-Interpolation interpFRT;
+#include "kinematics.h"
+#include "log.h"
+#include "utils.h"
 
-Interpolation interpFLX;        // interpolation objects
-Interpolation interpFLY;
-Interpolation interpFLZ;
-Interpolation interpFLT;
+// factor for converting degrees to motor turns used by the ODrive
+#define CONVERSION 0.02777777777777777777777777777778
 
-Interpolation interpBRX;        // interpolation objects
-Interpolation interpBRY;
-Interpolation interpBRZ;
-Interpolation interpBRT;
+// zero position offsets for when the robot is standing still
+#define OFFSET_SHOULDER 0.744587
+#define OFFSET_KNEE -1.489173
+#define OFFSET_HIP 0.000006
 
-Interpolation interpBLX;        // interpolation objects
-Interpolation interpBLY;
-Interpolation interpBLZ;
-Interpolation interpBLT;
 
-const float conversion = 0.02777777777777777777777777777778;  // factor for converting degrees to motor turns used by the ODrive
+JointAngles Kinematics::translate(int leg, float xIn, float yIn, float zIn, float roll, float pitch, float yawIn) {
+    // Log("[KINEMATICS] leg: %d, xIn: %.2f, yIn: %.2f, zIn: %.2f, roll: %.2f, pitch: %.2f, yawIn: %.2f, interOn: %d, dur: %d\n", leg, xIn, yIn, zIn, roll, pitch, yawIn, interOn, dur);
 
-void kinematics(int leg, float xIn, float yIn, float zIn, float roll, float pitch, float yawIn, int interOn, int dur) {
-    // SerialMon.printf("[KINEMATICS] leg: %d, xIn: %.2f, yIn: %.2f, zIn: %.2f, roll: %.2f, pitch: %.2f, yawIn: %.2f, interOn: %d, dur: %d\n", leg, xIn, yIn, zIn, roll, pitch, yawIn, interOn, dur);
-
-    // leg 1  : front left
-    // leg 2  : front right
+    // leg 1  : front right
+    // leg 2  : front left
     // leg 3  : back left
     // leg 4  : back right
 
     // moving the foot sideways on the end plane
     float hipOffset = 108;  // distance from the hip pivot to the centre of the leg
-    float lengthY;
+    // float lengthY;
     float hipAngle1a;
     float hipAngle1b;
     float hipAngle1;
@@ -55,7 +44,7 @@ void kinematics(int leg, float xIn, float yIn, float zIn, float roll, float pitc
     float shoulderAngle1a;
     float shoulderAngle1b;
     float shoulderAngle1c;
-    float shoulderAngle1d;
+    // float shoulderAngle1d;
     float kneeAngle;
     float kneeAngleDegrees;
 
@@ -68,7 +57,7 @@ void kinematics(int leg, float xIn, float yIn, float zIn, float roll, float pitc
     float footDisplacementRoll;       // where the foot actually is
     float footDisplacementAngleRoll;  // smaller angle
     float footWholeAngleRoll;         // whole leg angle
-    float hipRollAngle;               // angle for hip when roll axis is in use
+    // float hipRollAngle;               // angle for hip when roll axis is in use
     float rollAngle;                  // angle in RADIANS that the body rolls
     float zz1a;                       // hypotenuse of final triangle
     float zz1;                        // new height for leg to pass onto the next bit of code
@@ -81,7 +70,7 @@ void kinematics(int leg, float xIn, float yIn, float zIn, float roll, float pitc
     float footDisplacementPitch;       // where the foot actually is
     float footDisplacementAnglePitch;  // smaller angle
     float footWholeAnglePitch;         // whole leg angle
-    float shoulderPitchAngle;          // angle for hip when roll axis is in use
+    // float shoulderPitchAngle;          // angle for hip when roll axis is in use
     float pitchAngle;                  // angle in RADIANS that the body rolls
     float zz2a;                        // hypotenuse of final triangle
     float zz2;                         // new height for the leg to pass onto the next bit of code
@@ -96,64 +85,64 @@ void kinematics(int leg, float xIn, float yIn, float zIn, float roll, float pitc
     float xx3;            // new X coordinate based on demand angle
     float yy3;            // new Y coordinate based on demand angle
 
-    float x = 0;
-    float y = 0;
-    float z = 0;
-    float yaw = 0;
+    float z = zIn;
+    float x = xIn;
+    float y = yIn;
+    float yaw = yawIn;
 
     // ** INTERPOLATION **
     // use Interpolated values if Interpolation is on
-    if (interOn == 1) {
-        if (leg == 1) {  // front right
-            z = interpFRZ.go(zIn, dur);
-            x = interpFRX.go(xIn, dur);
-            y = interpFRY.go(yIn, dur);
-            yaw = interpFRT.go(yawIn, dur);
-        }
+    // if (interOn == 1) {
+    //     if (leg == 1) {  // front right
+    //         z = interpFRZ.go(zIn, dur);
+    //         x = interpFRX.go(xIn, dur);
+    //         y = interpFRY.go(yIn, dur);
+    //         yaw = interpFRT.go(yawIn, dur);
+    //     }
 
-        else if (leg == 2) {  // front left
-            z = interpFLZ.go(zIn, dur);
-            x = interpFLX.go(xIn, dur);
-            y = interpFLY.go(yIn, dur);
-            yaw = interpFLT.go(yawIn, dur);
+    //     else if (leg == 2) {  // front left
+    //         z = interpFLZ.go(zIn, dur);
+    //         x = interpFLX.go(xIn, dur);
+    //         y = interpFLY.go(yIn, dur);
+    //         yaw = interpFLT.go(yawIn, dur);
 
-        }
+    //     }
 
-        else if (leg == 4) {  // back right
-            z = interpBRZ.go(zIn, dur);
-            x = interpBRX.go(xIn, dur);
-            y = interpBRY.go(yIn, dur);
-            yaw = interpBRT.go(yawIn, dur);
-        }
+    //     else if (leg == 4) {  // back right
+    //         z = interpBRZ.go(zIn, dur);
+    //         x = interpBRX.go(xIn, dur);
+    //         y = interpBRY.go(yIn, dur);
+    //         yaw = interpBRT.go(yawIn, dur);
+    //     }
 
-        else if (leg == 3) {  // back left
-            z = interpBLZ.go(zIn, dur);
-            x = interpBLX.go(xIn, dur);
-            y = interpBLY.go(yIn, dur);
-            yaw = interpBLT.go(yawIn, dur);
-        }
-    }
+    //     else if (leg == 3) {  // back left
+    //         z = interpBLZ.go(zIn, dur);
+    //         x = interpBLX.go(xIn, dur);
+    //         y = interpBLY.go(yIn, dur);
+    //         yaw = interpBLT.go(yawIn, dur);
+    //     }
+    // }
 
-    // wait for filters to settle before using Interpolated values
-    // set a timer for filter to settle
-    if (interpFlag == 0) {
-        z = zIn;  // in the meantime use raw values
-        x = xIn;
-        y = yIn;
-        yaw = yawIn;
-        if (currentMillis - previousInterpMillis >= 300) {
-            interpFlag = 1;
-        }
-    }
-    // once time has settled and Interpolation is off then use the original values
-    else if (interpFlag == 1 && interOn == 0) {
-        z = zIn;
-        x = xIn;
-        y = yIn;
-        yaw = yawIn;
-    }
+    // // wait for filters to settle before using Interpolated values
+    // // set a timer for filter to settle
+    // if (interpFlag == 0) {
+    //     z = zIn;  // in the meantime use raw values
+    //     x = xIn;
+    //     y = yIn;
+    //     yaw = yawIn;
+    //     if (currentMillis - previousInterpMillis >= 300) {
+    //         interpFlag = 1;
+    //     }
+    // }
+    // // once time has settled and Interpolation is off then use the original values
+    // else if (interpFlag == 1 && interOn == 0) {
+        // z = zIn;
+        // x = xIn;
+        // y = yIn;
+        // yaw = yawIn;
+    // }
 
-    // SerialMon.printf("[KINEMATICS_INTERP] %d x=%.2f, y=%.2f, z=%.2f, yaw=%.2f interpFlag=%d currentMillis=%d previousInterpMillis=%d\n", leg, x, y, z, yaw, interpFlag, currentMillis, previousInterpMillis);
+    // Log("[KINEMATICS_INTERP] %d x=%.2f, y=%.2f, z=%.2f, yaw=%.2f interpFlag=%d currentMillis=%d previousInterpMillis=%d\n", leg, x, y, z, yaw, interpFlag, currentMillis, previousInterpMillis);
 
     // **** START INVERSE KINEMATICS CALCS ****
 
@@ -331,50 +320,279 @@ void kinematics(int leg, float xIn, float yIn, float zIn, float roll, float pitc
 
     // write to joints
 
-    float shoulderAngle1Counts, shoulderAngle2Counts, shoulderAngleCounts, kneeAngleCounts, hipAngleCounts;
+    float shoulderAngle1Counts, shoulderAngle2Counts;
+
+    JointAngles angles;
 
     if (leg == 1) {                                                              // front right
-        shoulderAngle1Counts = (shoulderAngle1Degrees - 45) * conversion;  // convert to encoder counts
-        shoulderAngle2Counts = shoulderAngle2Degrees * conversion;         // convert to encoder counts
-        shoulderAngleCounts = shoulderAngle1Counts + shoulderAngle2Counts;
-        kneeAngleCounts = (kneeAngleDegrees - 90) * conversion;  // convert to encoder counts
-        hipAngleCounts = hipAngle1Degrees * conversion;          // convert to encoder counts
-        driveJoints(21, shoulderAngleCounts);                          // front right shoulder
-        driveJoints(20, kneeAngleCounts);                              // front right knee
-        driveJoints(10, hipAngleCounts);                               // front right hip
+        shoulderAngle1Counts = (shoulderAngle1Degrees - 45) * CONVERSION;  // convert to encoder counts
+        shoulderAngle2Counts = shoulderAngle2Degrees * CONVERSION;         // convert to encoder counts
+        angles.shoulder = shoulderAngle1Counts + shoulderAngle2Counts;
+        angles.knee = (kneeAngleDegrees - 90) * CONVERSION;  // convert to encoder counts
+        angles.hip = hipAngle1Degrees * CONVERSION;          // convert to encoder counts
+        // driveJoints(21, shoulderAngleCounts);                          // front right shoulder
+        // driveJoints(20, kneeAngleCounts);                              // front right knee
+        // driveJoints(10, hipAngleCounts);                               // front right hip
     }
 
     else if (leg == 2) {                                                         // front left
-        shoulderAngle1Counts = (shoulderAngle1Degrees - 45) * conversion;  // convert to encoder counts
-        shoulderAngle2Counts = shoulderAngle2Degrees * conversion;         // convert to encoder counts
-        shoulderAngleCounts = shoulderAngle1Counts + shoulderAngle2Counts;
-        kneeAngleCounts = (kneeAngleDegrees - 90) * conversion;  // convert to encoder counts
-        hipAngleCounts = hipAngle1Degrees * conversion;          // convert to encoder counts
-        driveJoints(51, shoulderAngleCounts);                          // front left shoulder
-        driveJoints(50, kneeAngleCounts);                              // front left knee
-        driveJoints(40, hipAngleCounts);                               // front left hip
+        shoulderAngle1Counts = (shoulderAngle1Degrees - 45) * CONVERSION;  // convert to encoder counts
+        shoulderAngle2Counts = shoulderAngle2Degrees * CONVERSION;         // convert to encoder counts
+        angles.shoulder = shoulderAngle1Counts + shoulderAngle2Counts;
+        angles.knee = (kneeAngleDegrees - 90) * CONVERSION;  // convert to encoder counts
+        angles.hip = hipAngle1Degrees * CONVERSION;          // convert to encoder counts
+        // driveJoints(51, shoulderAngleCounts);                          // front left shoulder
+        // driveJoints(50, kneeAngleCounts);                              // front left knee
+        // driveJoints(40, hipAngleCounts);                               // front left hip
     }
 
     else if (leg == 3) {                                                         // back left
-        shoulderAngle1Counts = (shoulderAngle1Degrees - 45) * conversion;  // convert to encoder counts
-        shoulderAngle2Counts = shoulderAngle2Degrees * conversion;         // convert to encoder counts
-        shoulderAngleCounts = shoulderAngle1Counts - shoulderAngle2Counts;
-        kneeAngleCounts = (kneeAngleDegrees - 90) * conversion;  // convert to encoder counts
-        hipAngleCounts = hipAngle1Degrees * conversion;          // convert to encoder counts
-        driveJoints(61, shoulderAngleCounts);                          // back left shoulder
-        driveJoints(60, kneeAngleCounts);                              // back left knee
-        driveJoints(41, hipAngleCounts);                               // back left hip
+        shoulderAngle1Counts = (shoulderAngle1Degrees - 45) * CONVERSION;  // convert to encoder counts
+        shoulderAngle2Counts = shoulderAngle2Degrees * CONVERSION;         // convert to encoder counts
+        angles.shoulder = shoulderAngle1Counts - shoulderAngle2Counts;
+        angles.knee = (kneeAngleDegrees - 90) * CONVERSION;  // convert to encoder counts
+        angles.hip = hipAngle1Degrees * CONVERSION;          // convert to encoder counts
+        // driveJoints(61, shoulderAngleCounts);                          // back left shoulder
+        // driveJoints(60, kneeAngleCounts);                              // back left knee
+        // driveJoints(41, hipAngleCounts);                               // back left hip
 
     }
 
     else if (leg == 4) {                                                         // back right
-        shoulderAngle1Counts = (shoulderAngle1Degrees - 45) * conversion;  // convert to encoder counts
-        shoulderAngle2Counts = shoulderAngle2Degrees * conversion;         // convert to encoder counts
-        shoulderAngleCounts = shoulderAngle1Counts - shoulderAngle2Counts;
-        kneeAngleCounts = (kneeAngleDegrees - 90) * conversion;  // convert to encoder counts
-        hipAngleCounts = hipAngle1Degrees * conversion;          // convert to encoder counts
-        driveJoints(31, shoulderAngleCounts);                          // back right shoulder
-        driveJoints(30, kneeAngleCounts);                              // back right knee
-        driveJoints(11, hipAngleCounts);                               // back right hip
+        shoulderAngle1Counts = (shoulderAngle1Degrees - 45) * CONVERSION;  // convert to encoder counts
+        shoulderAngle2Counts = shoulderAngle2Degrees * CONVERSION;         // convert to encoder counts
+        angles.shoulder = shoulderAngle1Counts - shoulderAngle2Counts;
+        angles.knee = (kneeAngleDegrees - 90) * CONVERSION;  // convert to encoder counts
+        angles.hip = hipAngle1Degrees * CONVERSION;          // convert to encoder counts
+        // driveJoints(31, shoulderAngleCounts);                          // back right shoulder
+        // driveJoints(30, kneeAngleCounts);                              // back right knee
+        // driveJoints(11, hipAngleCounts);                               // back right hip
     }
+
+    // Apply zero position offsets
+    if(leg == 2 || leg == 3) { // left side
+        angles.shoulder = -angles.shoulder - OFFSET_SHOULDER;
+        angles.knee = -angles.knee - OFFSET_KNEE;
+        angles.hip = -angles.hip - OFFSET_HIP;
+    } else { // right side
+        angles.shoulder += OFFSET_SHOULDER;
+        angles.knee += OFFSET_KNEE;
+        angles.hip += OFFSET_HIP;
+    }
+
+
+    return angles;
+}
+
+const int maxLegHeight = 380,
+    minLegHeight = 320;
+
+// simple walking
+QuadJointAngles Kinematics::walk(int RFB, int RLR, int LT) {
+    unsigned long now = millis();
+
+    RFB = map(RFB, -128, 128, -40, 40);  // mm
+    RLR = map(RLR, -128, 128, -20, 20);  // mm
+    LT = map(LT, 0, 255, 0, 25);    // degrees
+
+    // lastRFB = filter(RFB, lastRFB, 15);
+    // lastRLR = filter(RLR, lastRLR, 15);
+    // lastLT = filter(LT, lastLT, 15);
+    lastRFB = RFB;
+    lastRLR = RLR;
+    lastLT = LT;
+
+    int longLeg1 = maxLegHeight,
+        shortLeg1 = minLegHeight,
+        longLeg2 = maxLegHeight,
+        shortLeg2 = minLegHeight;
+
+    int footOffset = 0;
+    int timer1 = 2000;  // FB gait timer  80
+    // timer2 = 75;   // LR gait timer
+    // timer3 = 75;   // LR gait timer
+
+    // Log("lastRFB: %f lastRLR: %f LTFiltered: %f\n", lastRFB, lastRLR, LTFiltered);
+
+    // float longLeg1;
+    // float shortLeg1;
+    float legLength1 = 0,
+    // float longLeg2;
+    // float shortLeg2;
+        legLength2 = 0;
+    // float footOffset;
+
+    float fr_RFB = 0,
+        fl_RFB = 0,
+        bl_RFB = 0,
+        br_RFB = 0,
+        fr_RLR = 0,
+        fl_RLR = 0,
+        bl_RLR = 0,
+        br_RLR = 0;
+    // float fr_LT;
+    // float fl_LT;
+    // float bl_LT;
+    // float br_LT;
+
+    // float fr_LLR;
+    // float fl_LLR;
+    // float br_LLR;
+    // float bl_LLR;
+    float timerScale = 0;
+
+    if (lastRFB == 0 && lastRLR == 0 && lastLT == 0) {  // controls are centered
+        Log("[WALKSTATUS] STANDING STILL\n");
+
+        // position legs a default standing positionS
+        legLength1 = longLeg1;
+        legLength2 = longLeg2;
+        fr_RFB = 0;
+        fl_RFB = 0;
+        bl_RFB = 0;
+        br_RFB = 0;
+        fr_RLR = footOffset;
+        fl_RLR = -footOffset;
+        bl_RLR = -footOffset;
+        br_RLR = footOffset;
+        // fr_LT = 0;
+        // fl_LT = 0;
+        // bl_LT = 0;
+        // br_LT = 0;
+    }
+
+    // walking
+    else {
+        Log("[WALKSTATUS] WALKING - %d\n", step);
+
+        if (step == 0) {
+            legLength1 = shortLeg1;
+            legLength2 = longLeg2;
+            fr_RFB = -lastRFB;
+            fl_RFB = lastRFB;
+            bl_RFB = -lastRFB;
+            br_RFB = lastRFB;
+            fr_RLR = (footOffset - lastRLR) + LT;
+            fl_RLR = (-footOffset + lastRLR) - LT;
+            bl_RLR = (-footOffset - lastRLR) - LT;
+            br_RLR = (footOffset + lastRLR) + LT;
+            // fr_RLR = LT;
+            // fl_RLR = 0-LT;
+            // bl_RLR = 0-LT;
+            // br_RLR = LT;
+        }
+
+        else if (step == 1) {
+            legLength1 = longLeg1;
+            legLength2 = longLeg2;
+            fr_RFB = -lastRFB;
+            fl_RFB = lastRFB;
+            bl_RFB = -lastRFB;
+            br_RFB = lastRFB;
+            fr_RLR = (footOffset - lastRLR) + LT;
+            fl_RLR = (-footOffset + lastRLR) - LT;
+            bl_RLR = (-footOffset - lastRLR) - LT;
+            br_RLR = (footOffset + lastRLR) + LT;
+            // fr_RLR = LT;
+            // fl_RLR = 0-LT;
+            // bl_RLR = 0-LT;
+            // br_RLR = LT;
+        }
+
+        else if (step == 2) {
+            legLength1 = longLeg1;
+            legLength2 = shortLeg2;
+            fr_RFB = lastRFB;
+            fl_RFB = -lastRFB;
+            bl_RFB = lastRFB;
+            br_RFB = -lastRFB;
+            fr_RLR = (footOffset + lastRLR) - LT;
+            fl_RLR = (-footOffset - lastRLR) + LT;
+            bl_RLR = (-footOffset + lastRLR) + LT;
+            br_RLR = (footOffset - lastRLR) - LT;
+            // fr_RLR = 0-LT;
+            // fl_RLR = LT;
+            // bl_RLR = LT;
+            //  br_RLR = 0-LT;
+        }
+
+        else if (step == 3) {
+            legLength1 = longLeg1;
+            legLength2 = longLeg2;
+            fr_RFB = lastRFB;
+            fl_RFB = -lastRFB;
+            bl_RFB = lastRFB;
+            br_RFB = -lastRFB;
+            fr_RLR = (footOffset + lastRLR) - LT;
+            fl_RLR = (-footOffset - lastRLR) + LT;
+            bl_RLR = (-footOffset + lastRLR) + LT;
+            br_RLR = (footOffset - lastRLR) - LT;
+            // fr_RLR = 0-LT;
+            // fl_RLR = LT;
+            // bl_RLR = LT;
+            // br_RLR = 0-LT;
+        }
+
+        float stepLength;
+        float stepWidth;
+        float stepAngle;
+        float stepHyp;
+
+        // timer calcs
+
+        stepLength = abs(fr_RFB);
+        stepWidth = abs(fr_RLR);
+
+        if (stepLength == 0.0) {
+            stepLength = 0.01;  // avoid divide by zero
+        }
+
+        stepAngle = atan(stepLength / stepWidth);    // radians       // work out actual distance of step
+        stepHyp = abs(stepLength / sin(stepAngle));  // mm
+
+        timerScale = timer1 + (stepHyp / 3.5);
+
+        Log("AAAAAAA %ld > %f\n", now - lastStepAt, timerScale);
+
+        if(now - lastStepAt > timerScale) {
+            lastStepAt = now;
+            if(step == 3) step = 0;
+            else step++;
+        }
+
+        // Log("=== stepHyp: %f, timerScale: %f\n", stepHyp, timerScale);
+    }
+
+    float IMUpitch = 0,
+        IMUroll = 0;
+
+    float legTransX = IMUpitch * -2,
+        legTransY = IMUroll * -2,
+
+        // legTransXFiltered = filter(legTransX, legTransXFiltered, 50),
+        // legTransYFiltered = filter(legTransY, legTransYFiltered, 50),
+
+        legRoll = IMUroll * -0.5,
+        legPitch = IMUpitch * 0.5;
+
+        // legRollFiltered = filter(legRoll, legRollFiltered, 60),
+        // legPitchFiltered = filter(legPitch, legPitchFiltered, 60);
+
+
+    QuadJointAngles angles = {
+        translate(1, fr_RFB - legTransX, fr_RLR - legTransY, legLength1, legRoll, legPitch, 0),
+        translate(2, fl_RFB - legTransX, fl_RLR - legTransY, legLength2, legRoll, legPitch, 0),
+        translate(3, bl_RFB - legTransX, bl_RLR - legTransY, legLength1, legRoll, legPitch, 0),
+        translate(4, br_RFB - legTransX, br_RLR - legTransY, legLength2, legRoll, legPitch, 0),
+    };
+    angles.duration = timerScale * 0.8;
+
+    return angles;
+}
+
+// just returns the walk mode standing still
+QuadJointAngles Kinematics::home() {
+    QuadJointAngles angles = walk(0, 0, 0);
+    angles.duration = 0;
+    return angles;
 }

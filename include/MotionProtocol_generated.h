@@ -8,9 +8,9 @@
 
 // Ensure the included flatbuffers.h is the same version as when this file was
 // generated, otherwise it may not be compatible.
-static_assert(FLATBUFFERS_VERSION_MAJOR == 24 &&
-              FLATBUFFERS_VERSION_MINOR == 3 &&
-              FLATBUFFERS_VERSION_REVISION == 25,
+static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
+              FLATBUFFERS_VERSION_MINOR == 2 &&
+              FLATBUFFERS_VERSION_REVISION == 10,
              "Non-compatible flatbuffers version included");
 
 namespace MotionProtocol {
@@ -54,41 +54,17 @@ inline const char *EnumNameMessageType(MessageType e) {
 struct Remote FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef RemoteBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_MENU_DOWN = 4,
-    VT_SELECT = 6,
-    VT_MENU_UP = 8,
-    VT_TOGGLE_BOTTOM = 10,
-    VT_TOGGLE_TOP = 12,
-    VT_TOGGLE1 = 14,
-    VT_TOGGLE2 = 16,
-    VT_MODE = 18,
-    VT_RLR = 20,
-    VT_RFB = 22,
-    VT_RT = 24,
-    VT_LLR = 26,
-    VT_LFB = 28,
-    VT_LT = 30
+    VT_ENABLED = 4,
+    VT_MODE = 6,
+    VT_RLR = 8,
+    VT_RFB = 10,
+    VT_RT = 12,
+    VT_LLR = 14,
+    VT_LFB = 16,
+    VT_LT = 18
   };
-  int16_t menu_down() const {
-    return GetField<int16_t>(VT_MENU_DOWN, 0);
-  }
-  int16_t select() const {
-    return GetField<int16_t>(VT_SELECT, 0);
-  }
-  int16_t menu_up() const {
-    return GetField<int16_t>(VT_MENU_UP, 0);
-  }
-  bool toggle_bottom() const {
-    return GetField<uint8_t>(VT_TOGGLE_BOTTOM, 0) != 0;
-  }
-  bool toggle_top() const {
-    return GetField<uint8_t>(VT_TOGGLE_TOP, 0) != 0;
-  }
-  bool toggle1() const {
-    return GetField<uint8_t>(VT_TOGGLE1, 0) != 0;
-  }
-  bool toggle2() const {
-    return GetField<uint8_t>(VT_TOGGLE2, 0) != 0;
+  bool enabled() const {
+    return GetField<uint8_t>(VT_ENABLED, 0) != 0;
   }
   int8_t mode() const {
     return GetField<int8_t>(VT_MODE, 0);
@@ -113,13 +89,7 @@ struct Remote FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<int16_t>(verifier, VT_MENU_DOWN, 2) &&
-           VerifyField<int16_t>(verifier, VT_SELECT, 2) &&
-           VerifyField<int16_t>(verifier, VT_MENU_UP, 2) &&
-           VerifyField<uint8_t>(verifier, VT_TOGGLE_BOTTOM, 1) &&
-           VerifyField<uint8_t>(verifier, VT_TOGGLE_TOP, 1) &&
-           VerifyField<uint8_t>(verifier, VT_TOGGLE1, 1) &&
-           VerifyField<uint8_t>(verifier, VT_TOGGLE2, 1) &&
+           VerifyField<uint8_t>(verifier, VT_ENABLED, 1) &&
            VerifyField<int8_t>(verifier, VT_MODE, 1) &&
            VerifyField<int8_t>(verifier, VT_RLR, 1) &&
            VerifyField<int8_t>(verifier, VT_RFB, 1) &&
@@ -135,26 +105,8 @@ struct RemoteBuilder {
   typedef Remote Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_menu_down(int16_t menu_down) {
-    fbb_.AddElement<int16_t>(Remote::VT_MENU_DOWN, menu_down, 0);
-  }
-  void add_select(int16_t select) {
-    fbb_.AddElement<int16_t>(Remote::VT_SELECT, select, 0);
-  }
-  void add_menu_up(int16_t menu_up) {
-    fbb_.AddElement<int16_t>(Remote::VT_MENU_UP, menu_up, 0);
-  }
-  void add_toggle_bottom(bool toggle_bottom) {
-    fbb_.AddElement<uint8_t>(Remote::VT_TOGGLE_BOTTOM, static_cast<uint8_t>(toggle_bottom), 0);
-  }
-  void add_toggle_top(bool toggle_top) {
-    fbb_.AddElement<uint8_t>(Remote::VT_TOGGLE_TOP, static_cast<uint8_t>(toggle_top), 0);
-  }
-  void add_toggle1(bool toggle1) {
-    fbb_.AddElement<uint8_t>(Remote::VT_TOGGLE1, static_cast<uint8_t>(toggle1), 0);
-  }
-  void add_toggle2(bool toggle2) {
-    fbb_.AddElement<uint8_t>(Remote::VT_TOGGLE2, static_cast<uint8_t>(toggle2), 0);
+  void add_enabled(bool enabled) {
+    fbb_.AddElement<uint8_t>(Remote::VT_ENABLED, static_cast<uint8_t>(enabled), 0);
   }
   void add_mode(int8_t mode) {
     fbb_.AddElement<int8_t>(Remote::VT_MODE, mode, 0);
@@ -190,13 +142,7 @@ struct RemoteBuilder {
 
 inline ::flatbuffers::Offset<Remote> CreateRemote(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    int16_t menu_down = 0,
-    int16_t select = 0,
-    int16_t menu_up = 0,
-    bool toggle_bottom = false,
-    bool toggle_top = false,
-    bool toggle1 = false,
-    bool toggle2 = false,
+    bool enabled = false,
     int8_t mode = 0,
     int8_t rlr = 0,
     int8_t rfb = 0,
@@ -205,9 +151,6 @@ inline ::flatbuffers::Offset<Remote> CreateRemote(
     int8_t lfb = 0,
     uint8_t lt = 0) {
   RemoteBuilder builder_(_fbb);
-  builder_.add_menu_up(menu_up);
-  builder_.add_select(select);
-  builder_.add_menu_down(menu_down);
   builder_.add_lt(lt);
   builder_.add_lfb(lfb);
   builder_.add_llr(llr);
@@ -215,10 +158,7 @@ inline ::flatbuffers::Offset<Remote> CreateRemote(
   builder_.add_rfb(rfb);
   builder_.add_rlr(rlr);
   builder_.add_mode(mode);
-  builder_.add_toggle2(toggle2);
-  builder_.add_toggle1(toggle1);
-  builder_.add_toggle_top(toggle_top);
-  builder_.add_toggle_bottom(toggle_bottom);
+  builder_.add_enabled(enabled);
   return builder_.Finish();
 }
 

@@ -1,14 +1,12 @@
 #include <Arduino.h>
 
-#include "common.h"
+// #include "utils.h"
 
-int THRESHOLD = 10;
+#define THRESHOLD 10
 
 int thresholdStick(int pos) {
     // threshold value for control sticks
-    if (abs(pos) <= THRESHOLD) {
-        pos = 0;
-    }
+    if (abs(pos) <= THRESHOLD) return 0;
 
     // SerialMon.printf("pos %d %d\n", pos, map(pos, -128, 128, -512, 512));
 

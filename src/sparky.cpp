@@ -8,10 +8,10 @@
 Sparky::Sparky()
     : odrive{ODrive(Serial1), ODrive(Serial2), ODrive(Serial3), // mapping for odrives
              ODrive(Serial4), ODrive(Serial5), ODrive(Serial6)},
-      leg{{0, odrive[3].axis0, odrive[4].axis1, odrive[4].axis0}, // mapping for leg joint axis
-          {1, odrive[0].axis0, odrive[1].axis1, odrive[1].axis0},
-          {2, odrive[0].axis1, odrive[2].axis1, odrive[2].axis0},
-          {3, odrive[3].axis1, odrive[5].axis1, odrive[5].axis0}},
+      leg{{0, odrive[0].axis0, odrive[1].axis1, odrive[1].axis0}, // mapping for leg joint axis
+          {1, odrive[3].axis0, odrive[4].axis1, odrive[4].axis0},
+          {2, odrive[3].axis1, odrive[5].axis1, odrive[5].axis0},
+          {3, odrive[0].axis1, odrive[2].axis1, odrive[2].axis0}},
       kinematics() {}
 
 void Sparky::setup() {

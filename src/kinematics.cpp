@@ -229,7 +229,7 @@ JointAngles Kinematics::translate(int leg, float xIn, float yIn, float zIn, floa
     // calc new Z to pass on
     xx1 = sin(footWholeAnglePitch) * zz2a;
 
-    if (leg == 1 || leg == 2) {
+    if (leg == 1 || leg == 4) {
         xx1 = -xx1;
     }
 
@@ -318,68 +318,43 @@ JointAngles Kinematics::translate(int leg, float xIn, float yIn, float zIn, floa
     shoulderAngle1Degrees = shoulderAngle1 * (180 / PI);  // degrees
     kneeAngleDegrees = kneeAngle * (180 / PI);            // degrees
 
-    // write to joints
-
     float shoulderAngle1Counts, shoulderAngle2Counts;
+
+    // Convert angles to motor rotations, and apply zero offsets
 
     JointAngles angles;
 
-    if (leg == 1) {                                                              // front right
-        shoulderAngle1Counts = (shoulderAngle1Degrees - 45) * CONVERSION;  // convert to encoder counts
-        shoulderAngle2Counts = shoulderAngle2Degrees * CONVERSION;         // convert to encoder counts
-        angles.shoulder = shoulderAngle1Counts + shoulderAngle2Counts;
-        angles.knee = (kneeAngleDegrees - 90) * CONVERSION;  // convert to encoder counts
-        angles.hip = hipAngle1Degrees * CONVERSION;          // convert to encoder counts
-        // driveJoints(21, shoulderAngleCounts);                          // front right shoulder
-        // driveJoints(20, kneeAngleCounts);                              // front right knee
-        // driveJoints(10, hipAngleCounts);                               // front right hip
+    if (leg == 1) { // front right
+        shoulderAngle1Counts = (shoulderAngle1Degrees - 45) * CONVERSION;
+        shoulderAngle2Counts = shoulderAngle2Degrees * CONVERSION;
+        angles.shoulder = -shoulderAngle1Counts + shoulderAngle2Counts - OFFSET_SHOULDER;
+        angles.knee = (kneeAngleDegrees - 90) * CONVERSION + OFFSET_KNEE;
+        angles.hip = -hipAngle1Degrees * CONVERSION - OFFSET_HIP;
     }
 
-    else if (leg == 2) {                                                         // front left
-        shoulderAngle1Counts = (shoulderAngle1Degrees - 45) * CONVERSION;  // convert to encoder counts
-        shoulderAngle2Counts = shoulderAngle2Degrees * CONVERSION;         // convert to encoder counts
-        angles.shoulder = shoulderAngle1Counts + shoulderAngle2Counts;
-        angles.knee = (kneeAngleDegrees - 90) * CONVERSION;  // convert to encoder counts
-        angles.hip = hipAngle1Degrees * CONVERSION;          // convert to encoder counts
-        // driveJoints(51, shoulderAngleCounts);                          // front left shoulder
-        // driveJoints(50, kneeAngleCounts);                              // front left knee
-        // driveJoints(40, hipAngleCounts);                               // front left hip
+    else if (leg == 2) { // front left
+        shoulderAngle1Counts = (shoulderAngle1Degrees - 45) * CONVERSION;
+        shoulderAngle2Counts = shoulderAngle2Degrees * CONVERSION;
+        angles.shoulder = shoulderAngle1Counts + shoulderAngle2Counts + OFFSET_SHOULDER;
+        angles.knee = -(kneeAngleDegrees - 90) * CONVERSION - OFFSET_KNEE;
+        angles.hip = hipAngle1Degrees * CONVERSION + OFFSET_HIP;
     }
 
-    else if (leg == 3) {                                                         // back left
-        shoulderAngle1Counts = (shoulderAngle1Degrees - 45) * CONVERSION;  // convert to encoder counts
-        shoulderAngle2Counts = shoulderAngle2Degrees * CONVERSION;         // convert to encoder counts
-        angles.shoulder = shoulderAngle1Counts - shoulderAngle2Counts;
-        angles.knee = (kneeAngleDegrees - 90) * CONVERSION;  // convert to encoder counts
-        angles.hip = hipAngle1Degrees * CONVERSION;          // convert to encoder counts
-        // driveJoints(61, shoulderAngleCounts);                          // back left shoulder
-        // driveJoints(60, kneeAngleCounts);                              // back left knee
-        // driveJoints(41, hipAngleCounts);                               // back left hip
-
+    else if (leg == 3) { // back left
+        shoulderAngle1Counts = (shoulderAngle1Degrees - 45) * CONVERSION;
+        shoulderAngle2Counts = shoulderAngle2Degrees * CONVERSION;
+        angles.shoulder = -shoulderAngle1Counts - shoulderAngle2Counts - OFFSET_SHOULDER;
+        angles.knee = (kneeAngleDegrees - 90) * CONVERSION + OFFSET_KNEE;
+        angles.hip = -hipAngle1Degrees * CONVERSION - OFFSET_HIP;
     }
 
-    else if (leg == 4) {                                                         // back right
-        shoulderAngle1Counts = (shoulderAngle1Degrees - 45) * CONVERSION;  // convert to encoder counts
-        shoulderAngle2Counts = shoulderAngle2Degrees * CONVERSION;         // convert to encoder counts
-        angles.shoulder = shoulderAngle1Counts - shoulderAngle2Counts;
-        angles.knee = (kneeAngleDegrees - 90) * CONVERSION;  // convert to encoder counts
-        angles.hip = hipAngle1Degrees * CONVERSION;          // convert to encoder counts
-        // driveJoints(31, shoulderAngleCounts);                          // back right shoulder
-        // driveJoints(30, kneeAngleCounts);                              // back right knee
-        // driveJoints(11, hipAngleCounts);                               // back right hip
+    else if (leg == 4) { // back right
+        shoulderAngle1Counts = (shoulderAngle1Degrees - 45) * CONVERSION;
+        shoulderAngle2Counts = shoulderAngle2Degrees * CONVERSION;
+        angles.shoulder = shoulderAngle1Counts - shoulderAngle2Counts + OFFSET_SHOULDER;
+        angles.knee = -(kneeAngleDegrees - 90) * CONVERSION - OFFSET_KNEE;
+        angles.hip = hipAngle1Degrees * CONVERSION + OFFSET_HIP;
     }
-
-    // Apply zero position offsets
-    if(leg == 2 || leg == 3) { // left side
-        angles.shoulder = -angles.shoulder - OFFSET_SHOULDER;
-        angles.knee = -angles.knee - OFFSET_KNEE;
-        angles.hip = -angles.hip - OFFSET_HIP;
-    } else { // right side
-        angles.shoulder += OFFSET_SHOULDER;
-        angles.knee += OFFSET_KNEE;
-        angles.hip += OFFSET_HIP;
-    }
-
 
     return angles;
 }
@@ -408,7 +383,7 @@ QuadJointAngles Kinematics::walk(int RFB, int RLR, int LT) {
         shortLeg2 = minLegHeight;
 
     int footOffset = 0;
-    int timer1 = 2000;  // FB gait timer  80
+    int timer1 = 80;  // FB gait timer  80
     // timer2 = 75;   // LR gait timer
     // timer3 = 75;   // LR gait timer
 

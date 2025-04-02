@@ -5,12 +5,14 @@
 #include <ODriveArduino.h>
 #include <Ramp.h>
 
+// Forward declare ODrive to avoid circular dependency.
+class ODrive;
 
 class Axis {
     private:
-        HardwareSerial& serial;
-        ODriveArduino& odrive;
+        ODrive& odrive;
         int id;
+
         rampFloat ramp;
         float offset = 0.0f;
         bool initialized;
@@ -19,12 +21,12 @@ class Axis {
         float startingPos = 0.0f;
 
     public:
-        Axis(HardwareSerial& _serial, ODriveArduino& _odrive, int _id);
+        Axis(ODrive& _odrive, int _id);
 
         void init(void);
         void fetchOffset(void);
         float getOffset(void);
-        int getError(void);
+        int fetchError(void);
         void reset(void);
         void setClosedLoop(void);
         int fetchState(void);

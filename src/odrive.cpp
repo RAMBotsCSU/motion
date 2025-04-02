@@ -22,27 +22,26 @@ std::string ODRIVE_CONFIG[] = {
 
 bool ODrive::init() {
     // ensure serial is clear
-    // serial.write("\n\n");
-    // serial.read();
+    serial.write("\n");
+    serial.readStringUntil('\n');
     serial.flush();
 
     // check if connected
-    serial.write("r serial_number\n");
-    String sn = serial.readStringUntil('\n');
+    int fw_v_m = send("r fw_version_minor").toInt();
 
-    if(sn.length() == 0) {
+    if(fw_v_m != 5) {
         Log("Failed to connect to odrive\n");
         return false;
     }
+
+    String sn = send("r serial_number");
 
     Log("Connected to SN: %s\n", sn.substring(0, sn.length() - 1).c_str());
 
     serial.setTimeout(5);
 
     for (size_t i = 0; i < sizeof(ODRIVE_CONFIG) / sizeof(ODRIVE_CONFIG[0]); ++i) {
-        serial.printf("w %s\n", ODRIVE_CONFIG[i].c_str());
-
-        String resp = serial.readStringUntil('\n');
+        String resp = send("w %s", ODRIVE_CONFIG[i].c_str());
         if(resp.length() > 0) { // the odrive will only respond if the command fails
             Log("w %s reponded: %s\n", ODRIVE_CONFIG[i].c_str(), resp.c_str());
         }
@@ -52,8 +51,7 @@ bool ODrive::init() {
     axis0.init();
     axis1.init();
 
-    serial.printf("ss\n"); // save config
-    serial.readStringUntil('\n');
+    send("ss"); // save config
 
     return true;
 }

@@ -1,7 +1,25 @@
+#include <string>
+
 #include "axis.hpp"
 #include "log.hpp"
 
-Axis::Axis(HardwareSerial& _serial, ODriveArduino& _odrive, int _id) : serial(_serial), odrive(_odrive), id(_id), ramp(0) {}
+
+std::string AXIS_CONFIG[] = {
+    "config.startup_closed_loop_control 1",
+
+    "controller.config.pos_gain 60",
+    "controller.config.vel_gain 0.1",
+    "controller.config.vel_integrator_gain 0.2",
+    "controller.config.vel_limit 500",
+
+    "motor.config.pole_pairs 20",
+    "motor.config.torque_constant 0.025", // 8.27/90
+    "motor.config.current_lim 22.0",
+    "motor.config.current_lim_margin 9.0",
+
+    "encoder.config.cpr 16384",
+    "encoder.config.mode 257", // Set encoder to SPI mode
+};
 
 void Axis::init() {
     // check for errors and attempt to reset them
@@ -25,7 +43,14 @@ void Axis::init() {
     if(fetchState() != AXIS_STATE_CLOSED_LOOP_CONTROL) setClosedLoop();
 
     int state = fetchState();
-    Log("Axis state: %d\n", state);
+    for (size_t i = 0; i < sizeof(AXIS_CONFIG) / sizeof(AXIS_CONFIG[0]); ++i) {
+        serial.printf("w axis%d.%s\n", id, AXIS_CONFIG[i].c_str());
+
+        String resp = serial.readStringUntil('\n');
+        if(resp.length() > 0) { // the odrive will only respond if the command fails
+            Log("  w axis%d.%s reponded: %s\n", id, AXIS_CONFIG[i].c_str(), resp.c_str());
+        }
+    }
 }
 
 void Axis::fetchOffset() {

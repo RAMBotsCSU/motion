@@ -13,13 +13,9 @@ std::string AXIS_CONFIG[] = {
     "controller.config.vel_integrator_gain 0.2",
     "controller.config.vel_limit 500",
 
-    "motor.config.pole_pairs 20",
     "motor.config.torque_constant 0.025", // 8.27/90
     "motor.config.current_lim 22.0",
     "motor.config.current_lim_margin 9.0",
-
-    "encoder.config.cpr 16384",
-    "encoder.config.mode 257", // Set encoder to SPI mode
 
     // TRAJECTORY CONTROL
     // Not documented well in 0.5.x, but still exists

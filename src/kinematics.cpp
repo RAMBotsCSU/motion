@@ -560,7 +560,6 @@ QuadJointAngles Kinematics::walk(int RFB, int RLR, int LT) {
         translate(3, bl_RFB - legTransX, bl_RLR - legTransY, legLength1, legRoll, legPitch, 0),
         translate(4, br_RFB - legTransX, br_RLR - legTransY, legLength2, legRoll, legPitch, 0),
     };
-    angles.duration = timerScale * 0.8;
 
     return angles;
 }
@@ -568,6 +567,5 @@ QuadJointAngles Kinematics::walk(int RFB, int RLR, int LT) {
 // just returns the walk mode standing still
 QuadJointAngles Kinematics::home() {
     QuadJointAngles angles = walk(0, 0, 0);
-    angles.duration = 0;
     return angles;
 }

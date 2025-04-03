@@ -83,15 +83,10 @@ void Sparky::update() {
         if(requestedMode == 0) angles = kinematics.home();
         else if(requestedMode == 6) angles = kinematics.walk(RFB, RLR, LT);
 
-        leg[0].move(angles.FR, angles.duration);
-        leg[1].move(angles.FL, angles.duration);
-        leg[2].move(angles.BL, angles.duration);
-        leg[3].move(angles.BR, angles.duration);
-
-        Log("leg0: %s\n", leg[0].logPos().c_str());
-        Log("leg1: %s\n", leg[1].logPos().c_str());
-        Log("leg2: %s\n", leg[2].logPos().c_str());
-        Log("leg3: %s\n", leg[3].logPos().c_str());
+        leg[0].move(angles.FR);
+        leg[1].move(angles.FL);
+        leg[2].move(angles.BL);
+        leg[3].move(angles.BR);
     }
 
 

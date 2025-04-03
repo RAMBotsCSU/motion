@@ -8,7 +8,7 @@ class Leg {
 public:
     Leg(int _id, Axis& _hip, Axis& _shoulder, Axis& _knee) : id(_id), hip(_hip), shoulder(_shoulder), knee(_knee) {}
 
-    void move(JointAngles, float);
+    void move(JointAngles);
 
     String logPos(void);
 

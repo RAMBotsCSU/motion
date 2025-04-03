@@ -20,10 +20,20 @@ std::string AXIS_CONFIG[] = {
 
     "encoder.config.cpr 16384",
     "encoder.config.mode 257", // Set encoder to SPI mode
+
+    // TRAJECTORY CONTROL
+    // Not documented well in 0.5.x, but still exists
+    // https://docs.odriverobotics.com/v/latest/manual/control.html#trajectory-control
+    "trap_traj.config.vel_limit 300.0",
+    "trap_traj.config.accel_limit 180.0",
+    "trap_traj.config.decel_limit 180.0",
+    "controller.config.inertia 0",
+
+    "controller.config.input_mode 5", // InputMode.TRAP_TRAJ
 };
 
 
-Axis::Axis(ODrive& _odrive, int _id) : odrive(_odrive), id(_id), ramp(0.0f) {}
+Axis::Axis(ODrive& _odrive, int _id) : odrive(_odrive), id(_id) {}
 
 void Axis::init() {
     // check for errors and attempt to reset them
@@ -38,6 +48,11 @@ void Axis::init() {
         reset();
 
         delay(100);
+    }
+
+    if(err > 0) {
+        Log("    Failed to reset error\n");
+        return;
     }
 
     // update axis zero pos offsets
@@ -78,34 +93,12 @@ int Axis::fetchState() {
     return odrive.send("r axis%d.current_state", id).toInt();
 }
 
-bool Axis::move(float pos, float duration) {
-    if(abs(pos - targetPos) > 0.0001) {  // Only start new movement if target actually changed
-        if(!ramp.isRunning()) {
-            targetPos = pos;
+void Axis::move(float pos) {
+    if(abs(pos - targetPos) > 0.001) {  // Only start new movement if target actually changed
+        targetPos = pos;
 
-            if(duration == 0) {
-                float max_velocity = 2.0;
-                float distance = abs(currentPos - pos);
-                duration = distance / max_velocity;
-            }
-
-            startingPos = currentPos;  // Start from current position for smooth transition
-            ramp.go(pos - startingPos, duration, LINEAR, ONCEFORWARD);
-            Log("ramp.go from %f to %f over %f seconds\n", startingPos, pos, duration);
-        }
+        odrive.send("t %d %f", id, targetPos + offset);
     }
-
-    if(ramp.isRunning()) {
-        currentPos = startingPos + ramp.update();
-        odrive.setPosition(id, currentPos + offset);
-        Log("setPosition %f (target: %f)\n", currentPos, targetPos);
-    }
-
-    return !ramp.isRunning();
-}
-
-float Axis::getCurrentPos() {
-    return currentPos;
 }
 
 float Axis::getOffset() {

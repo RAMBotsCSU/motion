@@ -3,7 +3,6 @@
 
 #include <HardwareSerial.h>
 #include <ODriveArduino.h>
-#include <Ramp.h>
 
 // Forward declare ODrive to avoid circular dependency.
 class ODrive;
@@ -13,12 +12,9 @@ class Axis {
         ODrive& odrive;
         int id;
 
-        rampFloat ramp;
         float offset = 0.0f;
         bool initialized;
-        float currentPos = 0.0f;
         float targetPos = 0.0f;
-        float startingPos = 0.0f;
 
     public:
         Axis(ODrive& _odrive, int _id);
@@ -31,11 +27,7 @@ class Axis {
         void setClosedLoop(void);
         int fetchState(void);
 
-        bool move(float, float);
-
-
-        float getCurrentPos(void);
-
+        void move(float);
     };
 
 #endif  // AXIS_H

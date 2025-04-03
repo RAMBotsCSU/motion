@@ -12,7 +12,6 @@ struct QuadJointAngles {
     JointAngles FL;
     JointAngles BL;
     JointAngles BR;
-    float duration = 0; // eugh
 };
 
 

@@ -82,7 +82,7 @@ void Axis::reset() {
 }
 
 void Axis::setClosedLoop() {
-    odrive.send("w axis%d.requested_state %d", AXIS_STATE_CLOSED_LOOP_CONTROL);
+    odrive.send("w axis%d.requested_state %d", id, AXIS_STATE_CLOSED_LOOP_CONTROL);
 }
 
 int Axis::fetchState() {

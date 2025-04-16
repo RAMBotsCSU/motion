@@ -39,13 +39,23 @@ static bool validateChecksum(const std::string &line) {
 class ODrive {
 private:
     HardwareSerial& serial;
+    bool _connected = false;
+    bool _initialized = false;
 
 public:
     ODrive(HardwareSerial& _serial) : serial(_serial), axis0(*this, 0), axis1(*this, 1) {}
 
-    bool init(void);
+    void init(void);
+    void connect(void);
 
-    // Updated send function using std::string with checksum appending and validation.
+    bool isConnected(void) {
+        return _connected;
+    }
+
+    bool isInitialized(void) {
+        return _initialized;
+    }
+
     String send(const char* format, ...) {
         va_list args;
         va_start(args, format);
@@ -67,8 +77,22 @@ public:
         // Log("%s", s.c_str());
 
         serial.print(s.c_str());
+
+        // Only read response if command starts with "r " or "w "
+        if(!(s.size() >= 2 && ((s[0]=='r' && s[1]==' ') || (s[0]=='w' && s[1]==' ')))) {
+            return "";
+        }
+
         String resp = serial.readStringUntil('\n');
         std::string respStr(resp.c_str());
+
+        // Log("===== %d %c\n", respStr.size(), s[0]);
+
+        // If read command and no response
+        if(isConnected() && respStr.size() == 0 && s[0]=='r') {
+            Log("Lost connection to odrive\n");
+            _connected = false;
+        }
 
         // Validate the checksum in the response if present.
         if(!validateChecksum(respStr)) {

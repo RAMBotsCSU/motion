@@ -20,26 +20,7 @@ std::string ODRIVE_CONFIG[] = {
 };
 
 
-bool ODrive::init() {
-    // ensure serial is clear
-    serial.write("\n");
-    serial.readStringUntil('\n');
-    serial.flush();
-
-    // check if connected
-    int fw_v_m = send("r fw_version_minor").toInt();
-
-    if(fw_v_m != 5) {
-        Log("Failed to connect to odrive\n");
-        return false;
-    }
-
-    String sn = send("r serial_number");
-
-    Log("Connected to SN: %s\n", sn.substring(0, sn.length() - 1).c_str());
-
-    serial.setTimeout(5);
-
+void ODrive::init() {
     for (size_t i = 0; i < sizeof(ODRIVE_CONFIG) / sizeof(ODRIVE_CONFIG[0]); ++i) {
         String resp = send("w %s", ODRIVE_CONFIG[i].c_str());
         if(resp.length() > 0) { // the odrive will only respond if the command fails
@@ -53,5 +34,46 @@ bool ODrive::init() {
 
     send("ss"); // save config
 
-    return true;
+    _initialized = true;
+}
+
+void ODrive::connect() {
+    serial.setTimeout(100);
+
+    // ensure serial is clear
+    // can't get serial.flush() to work but this does
+    while(serial.available()) {
+        serial.readStringUntil('\n');
+    }
+
+    // ensure write buffer is clear
+    serial.print("foo\n");
+    serial.readStringUntil('\n');
+
+    // check if connected
+    int fw_v_m = send("r fw_version_minor").toInt();
+
+    if(fw_v_m != 5) {
+        Log("Failed to connect to odrive\n");
+        return;
+    }
+
+    int sn = send("r serial_number").toInt();
+
+    // Happens sometimes for some reason
+    if(sn == 0) return;
+
+    // the odrive doesnt sen the full sn for some reason
+    // so this annoying math reconstructs most of it.
+    Log("Connected to SN: 0x%" PRIX64 "\n", (uint64_t)sn * 100000ULL >> 24);
+
+    _connected = true;
+
+    serial.setTimeout(5);
+
+    // only run this on first connection.
+    if(!isInitialized()) {
+        init();
+    }
+}
 }

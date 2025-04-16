@@ -35,15 +35,13 @@ void Sparky::setup() {
     mpu.setGyroRange(MPU6050_RANGE_250_DEG);
     mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
 
-    // Initialize all ODrives
+    // Attempt to connect all odrives
     for (ODrive& od : odrive) {
-        // lazy, so I assume the odrives should be on before the teensy
-        while(true) {
-            bool connected = od.init();
-            if(connected) break;
-        }
+        od.connect();
     }
 }
+
+unsigned long lastErrCk = 0;
 
 
 void Sparky::update() {
@@ -58,6 +56,14 @@ void Sparky::update() {
         if (enabled && now - remoteLastSeen > 500) {
             enabled = false;
             Log("Did not recieve remote data within timeout");
+        }
+
+        // check that all odrives are connected
+        for (ODrive& od : odrive) {
+            if(!od.isConnected()) {
+                enabled = false;
+                break;
+            }
         }
 
         if(!enabled) {
@@ -87,6 +93,17 @@ void Sparky::update() {
         leg[1].move(angles.FL);
         leg[2].move(angles.BL);
         leg[3].move(angles.BR);
+    }
+
+    if(now - lastErrCk >= 100) {
+        lastErrCk = now;
+
+        // attempt odrive reconnection if required
+        for (ODrive& od : odrive) {
+            if(!od.isConnected()) {
+                od.connect();
+            }
+        }
     }
 
 

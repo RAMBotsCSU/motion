@@ -8,6 +8,14 @@
 #include "kinematics.hpp"
 
 
+enum MotionMode {
+    HOME    = 0,
+    PUSH_UP = 4,
+    DANCE   = 5,
+    WALK    = 6,
+};
+
+
 class Sparky {
 public:
     Sparky();
@@ -17,12 +25,14 @@ public:
 
 
 private:
-    bool enabled = false;
+    bool _enabled = false;
     int requestedMode = 0;
+    int currentMode = 0;
     unsigned long lastTick;
     unsigned long remoteLastSeen;
 
     int LFB, LLR, LT, RFB, RLR, RT;
+    bool DPAD_U, DPAD_D, DPAD_L, DPAD_R, TRIANGLE, CROSS, SQUARE, CIRCLE;
 
     Adafruit_MPU6050 mpu;
 

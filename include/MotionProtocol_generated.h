@@ -61,7 +61,15 @@ struct Remote FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_RT = 12,
     VT_LLR = 14,
     VT_LFB = 16,
-    VT_LT = 18
+    VT_LT = 18,
+    VT_DPAD_U = 20,
+    VT_DPAD_D = 22,
+    VT_DPAD_L = 24,
+    VT_DPAD_R = 26,
+    VT_TRIANGLE = 28,
+    VT_CROSS = 30,
+    VT_SQUARE = 32,
+    VT_CIRCLE = 34
   };
   bool enabled() const {
     return GetField<uint8_t>(VT_ENABLED, 0) != 0;
@@ -87,6 +95,30 @@ struct Remote FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint8_t lt() const {
     return GetField<uint8_t>(VT_LT, 0);
   }
+  bool dpad_u() const {
+    return GetField<uint8_t>(VT_DPAD_U, 0) != 0;
+  }
+  bool dpad_d() const {
+    return GetField<uint8_t>(VT_DPAD_D, 0) != 0;
+  }
+  bool dpad_l() const {
+    return GetField<uint8_t>(VT_DPAD_L, 0) != 0;
+  }
+  bool dpad_r() const {
+    return GetField<uint8_t>(VT_DPAD_R, 0) != 0;
+  }
+  bool triangle() const {
+    return GetField<uint8_t>(VT_TRIANGLE, 0) != 0;
+  }
+  bool cross() const {
+    return GetField<uint8_t>(VT_CROSS, 0) != 0;
+  }
+  bool square() const {
+    return GetField<uint8_t>(VT_SQUARE, 0) != 0;
+  }
+  bool circle() const {
+    return GetField<uint8_t>(VT_CIRCLE, 0) != 0;
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint8_t>(verifier, VT_ENABLED, 1) &&
@@ -97,6 +129,14 @@ struct Remote FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<int8_t>(verifier, VT_LLR, 1) &&
            VerifyField<int8_t>(verifier, VT_LFB, 1) &&
            VerifyField<uint8_t>(verifier, VT_LT, 1) &&
+           VerifyField<uint8_t>(verifier, VT_DPAD_U, 1) &&
+           VerifyField<uint8_t>(verifier, VT_DPAD_D, 1) &&
+           VerifyField<uint8_t>(verifier, VT_DPAD_L, 1) &&
+           VerifyField<uint8_t>(verifier, VT_DPAD_R, 1) &&
+           VerifyField<uint8_t>(verifier, VT_TRIANGLE, 1) &&
+           VerifyField<uint8_t>(verifier, VT_CROSS, 1) &&
+           VerifyField<uint8_t>(verifier, VT_SQUARE, 1) &&
+           VerifyField<uint8_t>(verifier, VT_CIRCLE, 1) &&
            verifier.EndTable();
   }
 };
@@ -129,6 +169,30 @@ struct RemoteBuilder {
   void add_lt(uint8_t lt) {
     fbb_.AddElement<uint8_t>(Remote::VT_LT, lt, 0);
   }
+  void add_dpad_u(bool dpad_u) {
+    fbb_.AddElement<uint8_t>(Remote::VT_DPAD_U, static_cast<uint8_t>(dpad_u), 0);
+  }
+  void add_dpad_d(bool dpad_d) {
+    fbb_.AddElement<uint8_t>(Remote::VT_DPAD_D, static_cast<uint8_t>(dpad_d), 0);
+  }
+  void add_dpad_l(bool dpad_l) {
+    fbb_.AddElement<uint8_t>(Remote::VT_DPAD_L, static_cast<uint8_t>(dpad_l), 0);
+  }
+  void add_dpad_r(bool dpad_r) {
+    fbb_.AddElement<uint8_t>(Remote::VT_DPAD_R, static_cast<uint8_t>(dpad_r), 0);
+  }
+  void add_triangle(bool triangle) {
+    fbb_.AddElement<uint8_t>(Remote::VT_TRIANGLE, static_cast<uint8_t>(triangle), 0);
+  }
+  void add_cross(bool cross) {
+    fbb_.AddElement<uint8_t>(Remote::VT_CROSS, static_cast<uint8_t>(cross), 0);
+  }
+  void add_square(bool square) {
+    fbb_.AddElement<uint8_t>(Remote::VT_SQUARE, static_cast<uint8_t>(square), 0);
+  }
+  void add_circle(bool circle) {
+    fbb_.AddElement<uint8_t>(Remote::VT_CIRCLE, static_cast<uint8_t>(circle), 0);
+  }
   explicit RemoteBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -149,8 +213,24 @@ inline ::flatbuffers::Offset<Remote> CreateRemote(
     uint8_t rt = 0,
     int8_t llr = 0,
     int8_t lfb = 0,
-    uint8_t lt = 0) {
+    uint8_t lt = 0,
+    bool dpad_u = false,
+    bool dpad_d = false,
+    bool dpad_l = false,
+    bool dpad_r = false,
+    bool triangle = false,
+    bool cross = false,
+    bool square = false,
+    bool circle = false) {
   RemoteBuilder builder_(_fbb);
+  builder_.add_circle(circle);
+  builder_.add_square(square);
+  builder_.add_cross(cross);
+  builder_.add_triangle(triangle);
+  builder_.add_dpad_r(dpad_r);
+  builder_.add_dpad_l(dpad_l);
+  builder_.add_dpad_d(dpad_d);
+  builder_.add_dpad_u(dpad_u);
   builder_.add_lt(lt);
   builder_.add_lfb(lfb);
   builder_.add_llr(llr);

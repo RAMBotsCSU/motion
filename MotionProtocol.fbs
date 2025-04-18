@@ -14,6 +14,14 @@ table Remote {
     llr: int8;
     lfb: int8;
     lt: uint8;
+    dpad_u: bool;
+    dpad_d: bool;
+    dpad_l: bool;
+    dpad_r: bool;
+    triangle: bool;
+    cross: bool;
+    square: bool;
+    circle: bool;
 }
 
 table Message {

@@ -301,6 +301,11 @@ JointAngles Kinematics::translate(int leg, float xIn, float yIn, float zIn, floa
     return angles;
 }
 
+void Kinematics::reset() {
+    step = 0;
+    lastStepAt = 0;
+}
+
 const int maxLegHeight = 380,
     minLegHeight = 320;
 
@@ -461,6 +466,113 @@ QuadJointAngles Kinematics::walk(int RFB, int RLR, int LT) {
         translate(3, bl_RFB - legTransX, bl_RLR - legTransY, legLength1, legRoll, legPitch, 0),
         translate(4, br_RFB - legTransX, br_RLR - legTransY, legLength2, legRoll, legPitch, 0),
     };
+
+    return angles;
+}
+
+// push ups
+QuadJointAngles Kinematics::pushUp(bool press) {
+    int pushUpPos = maxLegHeight;
+
+    if (press) { // go down
+      pushUpPos = minLegHeight - 20;
+    }
+
+    QuadJointAngles angles = {
+        translate (1, 0, 0, pushUpPos, 0, 0, 0),
+        translate (2, 0, 0, pushUpPos, 0, 0, 0),
+        translate (3, 0, 0, pushUpPos, 0, 0, 0),
+        translate (4, 0, 0, pushUpPos, 0, 0, 0),
+    };
+
+    return angles;
+}
+
+// dance
+bool dancing = false;
+float dancePos = 0.0f;
+unsigned int danceTimer = 250;
+QuadJointAngles Kinematics::dance(bool up, bool down, bool left, bool right) {
+    unsigned long now = millis();
+
+    // Log("=== %d %d %d %d\n", up, down, left, right);
+
+    QuadJointAngles angles;
+
+    if (dancing) {
+        if(now - lastStepAt > danceTimer) {
+            lastStepAt = now;
+            if(step == 1) step = 0;
+            else step = 1;
+        }
+    }
+
+    if (up) {
+        dancing = true;
+
+        if (step == 0) {
+            dancePos = 10;
+        } else {
+            dancePos = -10;
+        }
+
+        angles = {
+            translate(1, 0, 0, maxLegHeight, dancePos, 0, 0),
+            translate(2, 0, 0, maxLegHeight, dancePos, 0, 0),
+            translate(3, 0, 0, maxLegHeight, dancePos, 0, 0),
+            translate(4, 0, 0, maxLegHeight, dancePos, 0, 0),
+        };
+    }
+
+    else if (right) {
+        dancing = true;
+
+        if (step == 0) {
+            dancePos = 5;
+        } else {
+            dancePos = -5;
+        }
+
+        angles = {
+            translate(1, 0, 0, maxLegHeight, 0, dancePos, 0),
+            translate(2, 0, 0, maxLegHeight, 0, dancePos, 0),
+            translate(3, 0, 0, maxLegHeight, 0, dancePos, 0),
+            translate(4, 0, 0, maxLegHeight, 0, dancePos, 0),
+        };
+    }
+
+    // else if (dance3) {
+    //     dance1Flag = 0;
+    //     dance2Flag = 0;
+    //     dance4Flag = 0;
+
+    //     //dance based on flag here
+    //     dance3Flag++;
+    // }
+
+    else if (left) {
+        dancing = true;
+
+        if (step == 0) {
+            dancePos = maxLegHeight + 10;
+        } else {
+            dancePos = maxLegHeight - 10;
+        }
+
+        angles = {
+            translate(1, 0, 0, dancePos, 0, 0, 0),
+            translate(2, 0, 0, dancePos, 0, 0, 0),
+            translate(3, 0, 0, dancePos, 0, 0, 0),
+            translate(4, 0, 0, dancePos, 0, 0, 0),
+        };
+    }
+
+    else {
+        step = 0;
+        dancePos = 0;
+        dancing = false;
+        angles = home();
+    }
 
     return angles;
 }

@@ -53,35 +53,36 @@ void Sparky::update() {
 
         lastTick = now;
 
+        bool enabled = _enabled;
+
         // if remote has disconnected
-        if (enabled && now - remoteLastSeen > 500) {
+        if (_enabled && now - remoteLastSeen > 500) {
             enabled = false;
-            Log("Did not recieve remote data within timeout");
+            Log("Did not recieve remote data within timeout\n");
         }
 
-        // check that all odrives are connected
         for (ODrive& od : odrive) {
             // check that all odrives are connected
             if(!od.isConnected()) {
-                enabled = false;
+                _enabled = false;
                 break;
             }
 
             // check for axis errors
             if(od.axis0.getError() > 0 || od.axis1.getError() > 0) {
-                enabled = false;
+                _enabled = false;
                 break;
             }
         }
 
+        QuadJointAngles angles;
+
         if(!enabled) {
-            LFB = 0;
-            LLR = 0;
-            LT = 0;
-            RFB = 0;
-            RLR = 0;
-            RT = 0;
-            requestedMode = 0;
+            angles = kinematics.home();
+        } else {
+            if(currentMode == MotionMode::WALK) angles = kinematics.walk(RFB, RLR, LT);
+            else if(currentMode == MotionMode::PUSH_UP) angles = kinematics.pushUp(CROSS);
+            else if(currentMode == MotionMode::DANCE) angles = kinematics.dance(DPAD_U, DPAD_D, DPAD_L, DPAD_R);
         }
 
         // sensors_event_t a, g, temp;
@@ -91,11 +92,6 @@ void Sparky::update() {
         // Log("Rotation X: %f, Y: %f, Z: %f rad/s\n", g.gyro.x, g.gyro.y, g.gyro.z);
         // Log("Temperature: %f degC\n", temp.temperature);
 
-
-        QuadJointAngles angles;
-
-        if(requestedMode == 0) angles = kinematics.home();
-        else if(requestedMode == 6) angles = kinematics.walk(RFB, RLR, LT);
 
         leg[0].move(angles.FR);
         leg[1].move(angles.FL);
@@ -153,11 +149,25 @@ void Sparky::update() {
 
             auto remote_data = message->remote();
 
-            bool _enabled = remote_data->enabled();
+            bool __enabled = remote_data->enabled();
 
-            if(_enabled != enabled) {
+            if(_enabled != __enabled) {
                 requestedMode = remote_data->mode();
-                enabled = remote_data->enabled();
+                _enabled = remote_data->enabled();
+
+                if(_enabled && requestedMode != currentMode) {
+                    if(requestedMode == MotionMode::WALK) {
+                        setSpeed(1.5);
+                    } else if (requestedMode == MotionMode::PUSH_UP) {
+                        setSpeed(0.05);
+                    } else if (requestedMode == MotionMode::DANCE) {
+                        setSpeed(0.2);
+                    }
+
+                    kinematics.reset();
+
+                    currentMode = requestedMode;
+                }
             }
 
             LFB = thresholdStick(remote_data->lfb());
@@ -166,6 +176,16 @@ void Sparky::update() {
             RFB = thresholdStick(remote_data->rfb());
             RLR = thresholdStick(remote_data->rlr());
             RT = remote_data->rt();
+
+            DPAD_U = remote_data->dpad_u();
+            DPAD_D = remote_data->dpad_d();
+            DPAD_L = remote_data->dpad_l();
+            DPAD_R = remote_data->dpad_r();
+
+            TRIANGLE = remote_data->triangle();
+            CROSS = remote_data->cross();
+            CIRCLE = remote_data->circle();
+            SQUARE = remote_data->square();
 
             SerialUSB.write("OK\n");
         }

@@ -17,8 +17,12 @@ struct QuadJointAngles {
 
 class Kinematics {
 public:
+    void reset(void);
+
     QuadJointAngles home();
     QuadJointAngles walk(int RFB, int RLR, int LT);
+    QuadJointAngles pushUp(bool);
+    QuadJointAngles dance(bool, bool, bool, bool);
 
 
 private:

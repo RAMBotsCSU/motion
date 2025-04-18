@@ -238,7 +238,6 @@ JointAngles Kinematics::translate(int leg, float xIn, float yIn, float zIn, floa
 
     // turn around roll angle for each side of the robot
     if (leg == 2 || leg == 3) {
-        roll = -roll;
         yy3 = -yy3;
     }
 

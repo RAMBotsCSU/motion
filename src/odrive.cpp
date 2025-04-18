@@ -54,7 +54,7 @@ void ODrive::connect() {
     int fw_v_m = send("r fw_version_minor").toInt();
 
     if(fw_v_m != 5) {
-        Log("Failed to connect to odrive\n");
+        Log("Failed to connect to odrive 0x%X\n", _sn);
         return;
     }
 
@@ -63,9 +63,10 @@ void ODrive::connect() {
     // Happens sometimes for some reason
     if(sn == 0) return;
 
-    // the odrive doesnt sen the full sn for some reason
+    // the odrive doesnt send the full sn for some reason
     // so this annoying math reconstructs most of it.
-    Log("Connected to SN: 0x%" PRIX64 "\n", (uint64_t)sn * 100000ULL >> 24);
+    _sn = (uint64_t)sn * 100000ULL >> 24;
+    Log("Connected to SN: 0x%X\n", _sn);
 
     _connected = true;
 
@@ -75,5 +76,4 @@ void ODrive::connect() {
     if(!isInitialized()) {
         init();
     }
-}
 }

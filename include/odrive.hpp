@@ -39,6 +39,7 @@ static bool validateChecksum(const std::string &line) {
 class ODrive {
 private:
     HardwareSerial& serial;
+    int _sn = 0;
     bool _connected = false;
     bool _initialized = false;
 
@@ -90,7 +91,7 @@ public:
 
         // If read command and no response
         if(isConnected() && respStr.size() == 0 && s[0]=='r') {
-            Log("Lost connection to odrive\n");
+            Log("Lost connection to odrive 0x%X\n", _sn);
             _connected = false;
         }
 

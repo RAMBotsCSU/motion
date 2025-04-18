@@ -42,6 +42,7 @@ void Sparky::setup() {
 }
 
 unsigned long lastErrCk = 0;
+int ODck = 0;
 
 
 void Sparky::update() {
@@ -60,7 +61,14 @@ void Sparky::update() {
 
         // check that all odrives are connected
         for (ODrive& od : odrive) {
+            // check that all odrives are connected
             if(!od.isConnected()) {
+                enabled = false;
+                break;
+            }
+
+            // check for axis errors
+            if(od.axis0.getError() > 0 || od.axis1.getError() > 0) {
                 enabled = false;
                 break;
             }
@@ -104,6 +112,21 @@ void Sparky::update() {
                 od.connect();
             }
         }
+
+        // check for and attempt to reset axis faults
+        Axis* axis;
+
+        if (ODck % 2) axis = &odrive[ODck / 2].axis1;
+        else          axis = &odrive[ODck / 2].axis0;
+
+        int err = axis->fetchError();
+
+        Log("odr%d - ax%d: %d\n", ODck / 2, ODck % 2, err);
+
+        if(err > 0) axis->reset();
+
+        if(ODck == 11) ODck = 0;
+        else ODck++;
     }
 
 

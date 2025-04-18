@@ -110,6 +110,8 @@ float Axis::getOffset() {
 }
 
 int Axis::fetchError() {
+    _error = odrive.send("r axis%d.error", id).toInt();
+    return _error;
 }
 
 void Axis::setSpeed(float speed) {

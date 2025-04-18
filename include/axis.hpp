@@ -11,9 +11,9 @@ class Axis {
     private:
         ODrive& odrive;
         int id;
+        int _error;
 
         float offset = 0.0f;
-        bool initialized;
         float targetPos = 0.0f;
         float _speed = 0.0f;
 
@@ -24,6 +24,7 @@ class Axis {
         void fetchOffset(void);
         float getOffset(void);
         int fetchError(void);
+        int getError(void) { return _error; }
         void reset(void);
         void setClosedLoop(void);
         int fetchState(void);

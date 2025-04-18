@@ -24,7 +24,6 @@ JointAngles Kinematics::translate(int leg, float xIn, float yIn, float zIn, floa
 
     // moving the foot sideways on the end plane
     float hipOffset = 108;  // distance from the hip pivot to the centre of the leg
-    // float lengthY;
     float hipAngle1a;
     float hipAngle1b;
     float hipAngle1;
@@ -45,7 +44,6 @@ JointAngles Kinematics::translate(int leg, float xIn, float yIn, float zIn, floa
     float shoulderAngle1a;
     float shoulderAngle1b;
     float shoulderAngle1c;
-    // float shoulderAngle1d;
     float kneeAngle;
     float kneeAngleDegrees;
 
@@ -58,7 +56,6 @@ JointAngles Kinematics::translate(int leg, float xIn, float yIn, float zIn, floa
     float footDisplacementRoll;       // where the foot actually is
     float footDisplacementAngleRoll;  // smaller angle
     float footWholeAngleRoll;         // whole leg angle
-    // float hipRollAngle;               // angle for hip when roll axis is in use
     float rollAngle;                  // angle in RADIANS that the body rolls
     float zz1a;                       // hypotenuse of final triangle
     float zz1;                        // new height for leg to pass onto the next bit of code
@@ -71,7 +68,6 @@ JointAngles Kinematics::translate(int leg, float xIn, float yIn, float zIn, floa
     float footDisplacementPitch;       // where the foot actually is
     float footDisplacementAnglePitch;  // smaller angle
     float footWholeAnglePitch;         // whole leg angle
-    // float shoulderPitchAngle;          // angle for hip when roll axis is in use
     float pitchAngle;                  // angle in RADIANS that the body rolls
     float zz2a;                        // hypotenuse of final triangle
     float zz2;                         // new height for the leg to pass onto the next bit of code
@@ -90,60 +86,6 @@ JointAngles Kinematics::translate(int leg, float xIn, float yIn, float zIn, floa
     float x = xIn;
     float y = yIn;
     float yaw = yawIn;
-
-    // ** INTERPOLATION **
-    // use Interpolated values if Interpolation is on
-    // if (interOn == 1) {
-    //     if (leg == 1) {  // front right
-    //         z = interpFRZ.go(zIn, dur);
-    //         x = interpFRX.go(xIn, dur);
-    //         y = interpFRY.go(yIn, dur);
-    //         yaw = interpFRT.go(yawIn, dur);
-    //     }
-
-    //     else if (leg == 2) {  // front left
-    //         z = interpFLZ.go(zIn, dur);
-    //         x = interpFLX.go(xIn, dur);
-    //         y = interpFLY.go(yIn, dur);
-    //         yaw = interpFLT.go(yawIn, dur);
-
-    //     }
-
-    //     else if (leg == 4) {  // back right
-    //         z = interpBRZ.go(zIn, dur);
-    //         x = interpBRX.go(xIn, dur);
-    //         y = interpBRY.go(yIn, dur);
-    //         yaw = interpBRT.go(yawIn, dur);
-    //     }
-
-    //     else if (leg == 3) {  // back left
-    //         z = interpBLZ.go(zIn, dur);
-    //         x = interpBLX.go(xIn, dur);
-    //         y = interpBLY.go(yIn, dur);
-    //         yaw = interpBLT.go(yawIn, dur);
-    //     }
-    // }
-
-    // // wait for filters to settle before using Interpolated values
-    // // set a timer for filter to settle
-    // if (interpFlag == 0) {
-    //     z = zIn;  // in the meantime use raw values
-    //     x = xIn;
-    //     y = yIn;
-    //     yaw = yawIn;
-    //     if (currentMillis - previousInterpMillis >= 300) {
-    //         interpFlag = 1;
-    //     }
-    // }
-    // // once time has settled and Interpolation is off then use the original values
-    // else if (interpFlag == 1 && interOn == 0) {
-        // z = zIn;
-        // x = xIn;
-        // y = yIn;
-        // yaw = yawIn;
-    // }
-
-    // Log("[KINEMATICS_INTERP] %d x=%.2f, y=%.2f, z=%.2f, yaw=%.2f interpFlag=%d currentMillis=%d previousInterpMillis=%d\n", leg, x, y, z, yaw, interpFlag, currentMillis, previousInterpMillis);
 
     // **** START INVERSE KINEMATICS CALCS ****
 
@@ -370,9 +312,6 @@ QuadJointAngles Kinematics::walk(int RFB, int RLR, int LT) {
     RLR = map(RLR, -128, 128, -20, 20);  // mm
     LT = map(LT, 0, 255, 0, 25);    // degrees
 
-    // lastRFB = filter(RFB, lastRFB, 15);
-    // lastRLR = filter(RLR, lastRLR, 15);
-    // lastLT = filter(LT, lastLT, 15);
     lastRFB = RFB;
     lastRLR = RLR;
     lastLT = LT;
@@ -384,18 +323,11 @@ QuadJointAngles Kinematics::walk(int RFB, int RLR, int LT) {
 
     int footOffset = 0;
     int timer1 = 80 * 1.0 / 0.7 * (1.0f / GLOBAL_SPEED);  // FB gait timer  80
-    // timer2 = 75;   // LR gait timer
-    // timer3 = 75;   // LR gait timer
 
     // Log("lastRFB: %f lastRLR: %f LTFiltered: %f\n", lastRFB, lastRLR, LTFiltered);
 
-    // float longLeg1;
-    // float shortLeg1;
     float legLength1 = 0,
-    // float longLeg2;
-    // float shortLeg2;
         legLength2 = 0;
-    // float footOffset;
 
     float fr_RFB = 0,
         fl_RFB = 0,
@@ -405,15 +337,6 @@ QuadJointAngles Kinematics::walk(int RFB, int RLR, int LT) {
         fl_RLR = 0,
         bl_RLR = 0,
         br_RLR = 0;
-    // float fr_LT;
-    // float fl_LT;
-    // float bl_LT;
-    // float br_LT;
-
-    // float fr_LLR;
-    // float fl_LLR;
-    // float br_LLR;
-    // float bl_LLR;
     float timerScale = 0;
 
     if (lastRFB == 0 && lastRLR == 0 && lastLT == 0) {  // controls are centered
@@ -430,10 +353,6 @@ QuadJointAngles Kinematics::walk(int RFB, int RLR, int LT) {
         fl_RLR = -footOffset;
         bl_RLR = -footOffset;
         br_RLR = footOffset;
-        // fr_LT = 0;
-        // fl_LT = 0;
-        // bl_LT = 0;
-        // br_LT = 0;
     }
 
     // walking
@@ -451,10 +370,6 @@ QuadJointAngles Kinematics::walk(int RFB, int RLR, int LT) {
             fl_RLR = (-footOffset + lastRLR) - LT;
             bl_RLR = (-footOffset - lastRLR) - LT;
             br_RLR = (footOffset + lastRLR) + LT;
-            // fr_RLR = LT;
-            // fl_RLR = 0-LT;
-            // bl_RLR = 0-LT;
-            // br_RLR = LT;
         }
 
         else if (step == 1) {
@@ -468,10 +383,6 @@ QuadJointAngles Kinematics::walk(int RFB, int RLR, int LT) {
             fl_RLR = (-footOffset + lastRLR) - LT;
             bl_RLR = (-footOffset - lastRLR) - LT;
             br_RLR = (footOffset + lastRLR) + LT;
-            // fr_RLR = LT;
-            // fl_RLR = 0-LT;
-            // bl_RLR = 0-LT;
-            // br_RLR = LT;
         }
 
         else if (step == 2) {
@@ -485,10 +396,6 @@ QuadJointAngles Kinematics::walk(int RFB, int RLR, int LT) {
             fl_RLR = (-footOffset - lastRLR) + LT;
             bl_RLR = (-footOffset + lastRLR) + LT;
             br_RLR = (footOffset - lastRLR) - LT;
-            // fr_RLR = 0-LT;
-            // fl_RLR = LT;
-            // bl_RLR = LT;
-            //  br_RLR = 0-LT;
         }
 
         else if (step == 3) {
@@ -502,10 +409,6 @@ QuadJointAngles Kinematics::walk(int RFB, int RLR, int LT) {
             fl_RLR = (-footOffset - lastRLR) + LT;
             bl_RLR = (-footOffset + lastRLR) + LT;
             br_RLR = (footOffset - lastRLR) - LT;
-            // fr_RLR = 0-LT;
-            // fl_RLR = LT;
-            // bl_RLR = LT;
-            // br_RLR = 0-LT;
         }
 
         float stepLength;
@@ -526,8 +429,6 @@ QuadJointAngles Kinematics::walk(int RFB, int RLR, int LT) {
         stepHyp = abs(stepLength / sin(stepAngle));  // mm
 
         timerScale = timer1 + (stepHyp / 3.5);
-
-        Log("AAAAAAA %ld > %f\n", now - lastStepAt, timerScale);
 
         if(now - lastStepAt > timerScale) {
             lastStepAt = now;

@@ -1,7 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define DEBUG true
-#define TICK_MS 10
+#define DEBUG false
+#define GLOBAL_SPEED 1.0f
 
 #endif  // CONFIG_H

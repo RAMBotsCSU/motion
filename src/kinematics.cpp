@@ -1,6 +1,7 @@
 #include <Arduino.h>
 
 #include "kinematics.hpp"
+#include "config.hpp"
 #include "log.hpp"
 #include "utils.hpp"
 
@@ -383,7 +384,7 @@ QuadJointAngles Kinematics::walk(int RFB, int RLR, int LT) {
         shortLeg2 = minLegHeight;
 
     int footOffset = 0;
-    int timer1 = 80;  // FB gait timer  80
+    int timer1 = 80 * 1.0 / 0.7 * (1.0f / GLOBAL_SPEED);  // FB gait timer  80
     // timer2 = 75;   // LR gait timer
     // timer3 = 75;   // LR gait timer
 

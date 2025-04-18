@@ -148,3 +148,10 @@ void Sparky::update() {
         }
     }
 }
+
+void Sparky::setSpeed(float speed) {
+    for (ODrive& od : odrive) {
+        od.axis0.setSpeed(speed);
+        od.axis1.setSpeed(speed);
+    }
+}

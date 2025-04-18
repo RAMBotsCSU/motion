@@ -13,6 +13,7 @@ public:
     Sparky();
     void setup();
     void update();
+    void setSpeed(float);
 
 
 private:

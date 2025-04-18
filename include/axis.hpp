@@ -15,6 +15,7 @@ class Axis {
         float offset = 0.0f;
         bool initialized;
         float targetPos = 0.0f;
+        float _speed = 0.0f;
 
     public:
         Axis(ODrive& _odrive, int _id);
@@ -26,6 +27,7 @@ class Axis {
         void reset(void);
         void setClosedLoop(void);
         int fetchState(void);
+        void setSpeed(float);
 
         void move(float);
     };

@@ -2,7 +2,13 @@
 
 #include "axis.hpp"
 #include "odrive.hpp"
+#include "config.hpp"
 #include "log.hpp"
+
+// axis speeds at 100% speed
+const float VEL_LIMIT = 300.0,
+            ACCEL_LIMIT = 180.0,
+            DECEL_LIMIT = 180.0;
 
 
 std::string AXIS_CONFIG[] = {
@@ -21,8 +27,8 @@ std::string AXIS_CONFIG[] = {
     // Not documented well in 0.5.x, but still exists
     // https://docs.odriverobotics.com/v/latest/manual/control.html#trajectory-control
     "trap_traj.config.vel_limit 300.0",
-    "trap_traj.config.accel_limit 180.0",
-    "trap_traj.config.decel_limit 180.0",
+    "trap_traj.config.accel_limit 1.0",
+    "trap_traj.config.decel_limit 1.0",
     "controller.config.inertia 0",
 
     "controller.config.input_mode 5", // InputMode.TRAP_TRAJ
@@ -67,6 +73,8 @@ void Axis::init() {
             Log("  w axis%d.%s reponded: %s\n", id, AXIS_CONFIG[i].c_str(), resp.c_str());
         }
     }
+
+    setSpeed(_speed);
 }
 
 void Axis::fetchOffset() {
@@ -102,5 +110,16 @@ float Axis::getOffset() {
 }
 
 int Axis::fetchError() {
-    return odrive.send("r axis%d.error", id).toInt();
+}
+
+void Axis::setSpeed(float speed) {
+    if(speed < 0) speed = 0.0;
+    else if(speed > 1) speed = 1.0f;
+
+    _speed = speed;
+
+    speed = speed * GLOBAL_SPEED;
+
+    odrive.send("w axis%d.trap_traj.config.accel_limit %0.2f", id, ACCEL_LIMIT * speed);
+    odrive.send("w axis%d.trap_traj.config.decel_limit %0.2f", id, DECEL_LIMIT * speed);
 }

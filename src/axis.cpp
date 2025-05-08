@@ -109,7 +109,7 @@ float Axis::getOffset() {
     return offset;
 }
 
-int Axis::fetchError() {
+u_int32_t Axis::fetchError() {
     _error = odrive.send("r axis%d.error", id).toInt();
     return _error;
 }

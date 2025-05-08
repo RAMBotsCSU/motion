@@ -29,4 +29,26 @@ table Message {
     remote: Remote;
 }
 
+table ODriveStatus {
+    connected0: bool;
+    connected1: bool;
+    connected2: bool;
+    connected3: bool;
+    connected4: bool;
+    connected5: bool;
+
+    error00: uint32;
+    error01: uint32;
+    error10: uint32;
+    error11: uint32;
+    error20: uint32;
+    error21: uint32;
+    error30: uint32;
+    error31: uint32;
+    error40: uint32;
+    error41: uint32;
+    error50: uint32;
+    error51: uint32;
+}
+
 root_type Message;

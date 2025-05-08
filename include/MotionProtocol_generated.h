@@ -21,6 +21,9 @@ struct RemoteBuilder;
 struct Message;
 struct MessageBuilder;
 
+struct ODriveStatus;
+struct ODriveStatusBuilder;
+
 enum MessageType : int8_t {
   MessageType_UNKNOWN = 0,
   MessageType_REMOTE = 1,
@@ -291,6 +294,217 @@ inline ::flatbuffers::Offset<Message> CreateMessage(
   MessageBuilder builder_(_fbb);
   builder_.add_remote(remote);
   builder_.add_type(type);
+  return builder_.Finish();
+}
+
+struct ODriveStatus FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef ODriveStatusBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_CONNECTED0 = 4,
+    VT_CONNECTED1 = 6,
+    VT_CONNECTED2 = 8,
+    VT_CONNECTED3 = 10,
+    VT_CONNECTED4 = 12,
+    VT_CONNECTED5 = 14,
+    VT_ERROR00 = 16,
+    VT_ERROR01 = 18,
+    VT_ERROR10 = 20,
+    VT_ERROR11 = 22,
+    VT_ERROR20 = 24,
+    VT_ERROR21 = 26,
+    VT_ERROR30 = 28,
+    VT_ERROR31 = 30,
+    VT_ERROR40 = 32,
+    VT_ERROR41 = 34,
+    VT_ERROR50 = 36,
+    VT_ERROR51 = 38
+  };
+  bool connected0() const {
+    return GetField<uint8_t>(VT_CONNECTED0, 0) != 0;
+  }
+  bool connected1() const {
+    return GetField<uint8_t>(VT_CONNECTED1, 0) != 0;
+  }
+  bool connected2() const {
+    return GetField<uint8_t>(VT_CONNECTED2, 0) != 0;
+  }
+  bool connected3() const {
+    return GetField<uint8_t>(VT_CONNECTED3, 0) != 0;
+  }
+  bool connected4() const {
+    return GetField<uint8_t>(VT_CONNECTED4, 0) != 0;
+  }
+  bool connected5() const {
+    return GetField<uint8_t>(VT_CONNECTED5, 0) != 0;
+  }
+  int32_t error00() const {
+    return GetField<int32_t>(VT_ERROR00, 0);
+  }
+  int32_t error01() const {
+    return GetField<int32_t>(VT_ERROR01, 0);
+  }
+  int32_t error10() const {
+    return GetField<int32_t>(VT_ERROR10, 0);
+  }
+  int32_t error11() const {
+    return GetField<int32_t>(VT_ERROR11, 0);
+  }
+  int32_t error20() const {
+    return GetField<int32_t>(VT_ERROR20, 0);
+  }
+  int32_t error21() const {
+    return GetField<int32_t>(VT_ERROR21, 0);
+  }
+  int32_t error30() const {
+    return GetField<int32_t>(VT_ERROR30, 0);
+  }
+  int32_t error31() const {
+    return GetField<int32_t>(VT_ERROR31, 0);
+  }
+  int32_t error40() const {
+    return GetField<int32_t>(VT_ERROR40, 0);
+  }
+  int32_t error41() const {
+    return GetField<int32_t>(VT_ERROR41, 0);
+  }
+  int32_t error50() const {
+    return GetField<int32_t>(VT_ERROR50, 0);
+  }
+  int32_t error51() const {
+    return GetField<int32_t>(VT_ERROR51, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint8_t>(verifier, VT_CONNECTED0, 1) &&
+           VerifyField<uint8_t>(verifier, VT_CONNECTED1, 1) &&
+           VerifyField<uint8_t>(verifier, VT_CONNECTED2, 1) &&
+           VerifyField<uint8_t>(verifier, VT_CONNECTED3, 1) &&
+           VerifyField<uint8_t>(verifier, VT_CONNECTED4, 1) &&
+           VerifyField<uint8_t>(verifier, VT_CONNECTED5, 1) &&
+           VerifyField<int32_t>(verifier, VT_ERROR00, 4) &&
+           VerifyField<int32_t>(verifier, VT_ERROR01, 4) &&
+           VerifyField<int32_t>(verifier, VT_ERROR10, 4) &&
+           VerifyField<int32_t>(verifier, VT_ERROR11, 4) &&
+           VerifyField<int32_t>(verifier, VT_ERROR20, 4) &&
+           VerifyField<int32_t>(verifier, VT_ERROR21, 4) &&
+           VerifyField<int32_t>(verifier, VT_ERROR30, 4) &&
+           VerifyField<int32_t>(verifier, VT_ERROR31, 4) &&
+           VerifyField<int32_t>(verifier, VT_ERROR40, 4) &&
+           VerifyField<int32_t>(verifier, VT_ERROR41, 4) &&
+           VerifyField<int32_t>(verifier, VT_ERROR50, 4) &&
+           VerifyField<int32_t>(verifier, VT_ERROR51, 4) &&
+           verifier.EndTable();
+  }
+};
+
+struct ODriveStatusBuilder {
+  typedef ODriveStatus Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_connected0(bool connected0) {
+    fbb_.AddElement<uint8_t>(ODriveStatus::VT_CONNECTED0, static_cast<uint8_t>(connected0), 0);
+  }
+  void add_connected1(bool connected1) {
+    fbb_.AddElement<uint8_t>(ODriveStatus::VT_CONNECTED1, static_cast<uint8_t>(connected1), 0);
+  }
+  void add_connected2(bool connected2) {
+    fbb_.AddElement<uint8_t>(ODriveStatus::VT_CONNECTED2, static_cast<uint8_t>(connected2), 0);
+  }
+  void add_connected3(bool connected3) {
+    fbb_.AddElement<uint8_t>(ODriveStatus::VT_CONNECTED3, static_cast<uint8_t>(connected3), 0);
+  }
+  void add_connected4(bool connected4) {
+    fbb_.AddElement<uint8_t>(ODriveStatus::VT_CONNECTED4, static_cast<uint8_t>(connected4), 0);
+  }
+  void add_connected5(bool connected5) {
+    fbb_.AddElement<uint8_t>(ODriveStatus::VT_CONNECTED5, static_cast<uint8_t>(connected5), 0);
+  }
+  void add_error00(int32_t error00) {
+    fbb_.AddElement<int32_t>(ODriveStatus::VT_ERROR00, error00, 0);
+  }
+  void add_error01(int32_t error01) {
+    fbb_.AddElement<int32_t>(ODriveStatus::VT_ERROR01, error01, 0);
+  }
+  void add_error10(int32_t error10) {
+    fbb_.AddElement<int32_t>(ODriveStatus::VT_ERROR10, error10, 0);
+  }
+  void add_error11(int32_t error11) {
+    fbb_.AddElement<int32_t>(ODriveStatus::VT_ERROR11, error11, 0);
+  }
+  void add_error20(int32_t error20) {
+    fbb_.AddElement<int32_t>(ODriveStatus::VT_ERROR20, error20, 0);
+  }
+  void add_error21(int32_t error21) {
+    fbb_.AddElement<int32_t>(ODriveStatus::VT_ERROR21, error21, 0);
+  }
+  void add_error30(int32_t error30) {
+    fbb_.AddElement<int32_t>(ODriveStatus::VT_ERROR30, error30, 0);
+  }
+  void add_error31(int32_t error31) {
+    fbb_.AddElement<int32_t>(ODriveStatus::VT_ERROR31, error31, 0);
+  }
+  void add_error40(int32_t error40) {
+    fbb_.AddElement<int32_t>(ODriveStatus::VT_ERROR40, error40, 0);
+  }
+  void add_error41(int32_t error41) {
+    fbb_.AddElement<int32_t>(ODriveStatus::VT_ERROR41, error41, 0);
+  }
+  void add_error50(int32_t error50) {
+    fbb_.AddElement<int32_t>(ODriveStatus::VT_ERROR50, error50, 0);
+  }
+  void add_error51(int32_t error51) {
+    fbb_.AddElement<int32_t>(ODriveStatus::VT_ERROR51, error51, 0);
+  }
+  explicit ODriveStatusBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<ODriveStatus> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<ODriveStatus>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<ODriveStatus> CreateODriveStatus(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    bool connected0 = false,
+    bool connected1 = false,
+    bool connected2 = false,
+    bool connected3 = false,
+    bool connected4 = false,
+    bool connected5 = false,
+    int32_t error00 = 0,
+    int32_t error01 = 0,
+    int32_t error10 = 0,
+    int32_t error11 = 0,
+    int32_t error20 = 0,
+    int32_t error21 = 0,
+    int32_t error30 = 0,
+    int32_t error31 = 0,
+    int32_t error40 = 0,
+    int32_t error41 = 0,
+    int32_t error50 = 0,
+    int32_t error51 = 0) {
+  ODriveStatusBuilder builder_(_fbb);
+  builder_.add_error51(error51);
+  builder_.add_error50(error50);
+  builder_.add_error41(error41);
+  builder_.add_error40(error40);
+  builder_.add_error31(error31);
+  builder_.add_error30(error30);
+  builder_.add_error21(error21);
+  builder_.add_error20(error20);
+  builder_.add_error11(error11);
+  builder_.add_error10(error10);
+  builder_.add_error01(error01);
+  builder_.add_error00(error00);
+  builder_.add_connected5(connected5);
+  builder_.add_connected4(connected4);
+  builder_.add_connected3(connected3);
+  builder_.add_connected2(connected2);
+  builder_.add_connected1(connected1);
+  builder_.add_connected0(connected0);
   return builder_.Finish();
 }
 

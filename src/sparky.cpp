@@ -187,7 +187,25 @@ void Sparky::update() {
             CIRCLE = remote_data->circle();
             SQUARE = remote_data->square();
 
-            SerialUSB.write("OK\n");
+            // ODrive status
+            flatbuffers::FlatBufferBuilder builder(1024);
+            auto odStatus = MotionProtocol::CreateODriveStatus(
+                builder,
+                odrive[0].isConnected(), odrive[1].isConnected(), odrive[2].isConnected(),
+                odrive[3].isConnected(), odrive[4].isConnected(), odrive[5].isConnected(),
+                odrive[0].axis0.getError(), odrive[0].axis1.getError(),
+                odrive[1].axis0.getError(), odrive[1].axis1.getError(),
+                odrive[2].axis0.getError(), odrive[2].axis1.getError(),
+                odrive[3].axis0.getError(), odrive[3].axis1.getError(),
+                odrive[4].axis0.getError(), odrive[4].axis1.getError(),
+                odrive[5].axis0.getError(), odrive[5].axis1.getError()
+            );
+            builder.Finish(odStatus);
+
+            uint8_t *buf = builder.GetBufferPointer();
+
+            SerialUSB.write(buf, builder.GetSize());
+            SerialUSB.write('\n');
         }
     }
 }

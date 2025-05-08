@@ -49,7 +49,7 @@ void Sparky::update() {
     unsigned long now = millis();
 
     if(now - lastTick >= TICK_MS) {
-        if(DEBUG) Log("========================== %d %ld\n", now - lastTick, now);
+        if(DEBUG) Log("=== %d %ld\n", now - lastTick, now);
 
         lastTick = now;
 
@@ -129,12 +129,13 @@ void Sparky::update() {
 
     if (SerialUSB.available()) {
         char controlBuffer[128];
-        SerialUSB.readBytes(controlBuffer, sizeof(controlBuffer));
+        size_t bytesRead = SerialUSB.readBytes(controlBuffer, sizeof(controlBuffer));
 
-        // Verify the buffer contains a valid message
-        flatbuffers::Verifier verifier((const uint8_t*)controlBuffer, sizeof(controlBuffer));
+        // Verify the buffer contains a valid message using actual bytes read
+        flatbuffers::Verifier verifier((const uint8_t*)controlBuffer, bytesRead);
         if (!MotionProtocol::VerifyMessageBuffer(verifier)) {
             Log("Invalid message received\n");
+            SerialUSB.flush();
             return;
         }
 
@@ -157,11 +158,11 @@ void Sparky::update() {
 
                 if(_enabled && requestedMode != currentMode) {
                     if(requestedMode == MotionMode::WALK) {
-                        setSpeed(1.5);
+                        setSpeed(0.7);
                     } else if (requestedMode == MotionMode::PUSH_UP) {
                         setSpeed(0.05);
                     } else if (requestedMode == MotionMode::DANCE) {
-                        setSpeed(0.2);
+                        setSpeed(0.19);
                     }
 
                     kinematics.reset();

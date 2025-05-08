@@ -72,8 +72,5 @@ void ODrive::connect() {
 
     serial.setTimeout(5);
 
-    // only run this on first connection.
-    if(!isInitialized()) {
-        init();
-    }
+    init();
 }

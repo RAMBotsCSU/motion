@@ -511,9 +511,9 @@ QuadJointAngles Kinematics::dance(bool up, bool down, bool left, bool right) {
         dancing = true;
 
         if (step == 0) {
-            dancePos = 10;
+            dancePos = 7;
         } else {
-            dancePos = -10;
+            dancePos = -7;
         }
 
         angles = {
@@ -554,9 +554,9 @@ QuadJointAngles Kinematics::dance(bool up, bool down, bool left, bool right) {
         dancing = true;
 
         if (step == 0) {
-            dancePos = maxLegHeight + 10;
+            dancePos = maxLegHeight + 5;
         } else {
-            dancePos = maxLegHeight - 10;
+            dancePos = maxLegHeight - 5;
         }
 
         angles = {

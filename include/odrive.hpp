@@ -107,6 +107,8 @@ public:
             return "";
         }
 
+        // Log("%s\n", respStr.c_str());
+
         // Remove checksum data from the response.
         size_t starPos = respStr.find('*');
         if (starPos != std::string::npos) {

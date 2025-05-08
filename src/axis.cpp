@@ -122,6 +122,9 @@ void Axis::setSpeed(float speed) {
 
     speed = speed * GLOBAL_SPEED;
 
+    Log("SET SPEED %f\n", speed);
+
+    // odrive.send("w axis%d.trap_traj.config.vel_limit %0.2f", id, VEL_LIMIT * speed);
     odrive.send("w axis%d.trap_traj.config.accel_limit %0.2f", id, ACCEL_LIMIT * speed);
     odrive.send("w axis%d.trap_traj.config.decel_limit %0.2f", id, DECEL_LIMIT * speed);
 }

@@ -42,6 +42,7 @@ private:
     int _sn = 0;
     bool _connected = false;
     bool _initialized = false;
+    unsigned long _last_send = 0;
 
 public:
     ODrive(HardwareSerial& _serial) : serial(_serial), axis0(*this, 0), axis1(*this, 1) {}
@@ -76,6 +77,11 @@ public:
         s += "*" + std::to_string(cs) + "\n";
 
         // Log("%s", s.c_str());
+
+        if (s[0] != 't') {
+            while(millis() - _last_send < 15); // rate limit to avoid making the odrive sad
+            _last_send = millis();
+        }
 
         serial.print(s.c_str());
 

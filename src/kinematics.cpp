@@ -515,7 +515,7 @@ QuadJointAngles Kinematics::dance(bool up, bool down, bool left, bool right) {
     if (dancing) {
         if(now - lastStepAt > danceTimer) {
             lastStepAt = now;
-            step = step + 1 % 4;
+            step = (step + 1) % 4;
         }
     }
 

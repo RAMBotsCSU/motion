@@ -470,20 +470,33 @@ QuadJointAngles Kinematics::walk(int RFB, int RLR, int LT) {
     return angles;
 }
 
-// push ups
-QuadJointAngles Kinematics::pushUp(bool press) {
+// push ups and sitting
+// If triangle is pressed, sparky sits. If cross is pressed, sparky goes down on all 4 legs. If both are pressed, sparky goes down on all 4 legs.
+QuadJointAngles Kinematics::pushUp(bool cross_press, bool triangle_press) {
     int pushUpPos = maxLegHeight;
+    int sitPos = maxLegHeight;
 
-    if (press) { // go down
-      pushUpPos = minLegHeight - 20;
+    if (triangle_press) { // back legs go down
+      sitPos = maxLegHeight - 20;
+
+      QuadJointAngles angles = {
+        translate (1, 0, 0, pushUpPos, 0, 0, 0),
+        translate (2, 0, 0, pushUpPos, 0, 0, 0),
+        translate (3, 0, 0, sitPos, 0, 0, 0),
+        translate (4, 0, 0, sitPos, 0, 0, 0),
+      };
     }
 
-    QuadJointAngles angles = {
+    if (cross_press) { // all legs go down
+      pushUpPos = maxLegHeight - 20;
+      
+      QuadJointAngles angles = {
         translate (1, 0, 0, pushUpPos, 0, 0, 0),
         translate (2, 0, 0, pushUpPos, 0, 0, 0),
         translate (3, 0, 0, pushUpPos, 0, 0, 0),
         translate (4, 0, 0, pushUpPos, 0, 0, 0),
-    };
+      };
+    }
 
     return angles;
 }
@@ -502,15 +515,14 @@ QuadJointAngles Kinematics::dance(bool up, bool down, bool left, bool right) {
     if (dancing) {
         if(now - lastStepAt > danceTimer) {
             lastStepAt = now;
-            if(step == 1) step = 0;
-            else step = 1;
+            step = step + 1 % 4;
         }
     }
 
-    if (up) {
+    if (up) { // Rock and roll (sways right to left)
         dancing = true;
 
-        if (step == 0) {
+        if (step % 2 == 0) {
             dancePos = 7;
         } else {
             dancePos = -7;
@@ -524,10 +536,10 @@ QuadJointAngles Kinematics::dance(bool up, bool down, bool left, bool right) {
         };
     }
 
-    else if (right) {
+    else if (right) { // Head bob (sways forward and backward)
         dancing = true;
 
-        if (step == 0) {
+        if (step % 2 == 0) {
             dancePos = 5;
         } else {
             dancePos = -5;
@@ -550,10 +562,10 @@ QuadJointAngles Kinematics::dance(bool up, bool down, bool left, bool right) {
     //     dance3Flag++;
     // }
 
-    else if (left) {
+    else if (left) { // Bop (all legs go up and down)
         dancing = true;
 
-        if (step == 0) {
+        if (step % 2 == 0) {
             dancePos = maxLegHeight + 5;
         } else {
             dancePos = maxLegHeight - 5;
@@ -564,6 +576,32 @@ QuadJointAngles Kinematics::dance(bool up, bool down, bool left, bool right) {
             translate(2, 0, 0, dancePos, 0, 0, 0),
             translate(3, 0, 0, dancePos, 0, 0, 0),
             translate(4, 0, 0, dancePos, 0, 0, 0),
+        };
+    }
+
+    else if (down) {
+        dancing = true;
+        int dancePos2;
+
+        if (step==0) {
+            dancePos = maxLegHeight - 14;
+            dancePos2 = maxLegHeight;
+        } else if (step==1){
+            dancePos = maxLegHeight - 14;
+            dancePos2 = maxLegHeight - 14;
+        } else if (step==2){
+            dancePos = maxLegHeight;
+            dancePos2 = maxLegHeight - 14;
+        } else {
+            dancePos = maxLegHeight;
+            dancePos2 = maxLegHeight;
+        }
+
+        angles = {
+            translate(1, 0, 0, dancePos, 0, 0, 0),
+            translate(2, 0, 0, dancePos, 0, 0, 0),
+            translate(3, 0, 0, dancePos2, 0, 0, 0),
+            translate(4, 0, 0, dancePos2, 0, 0, 0),
         };
     }
 

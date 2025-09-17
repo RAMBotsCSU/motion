@@ -81,8 +81,9 @@ void Sparky::update() {
             angles = kinematics.home();
         } else {
             if(currentMode == MotionMode::WALK) angles = kinematics.walk(RFB, RLR, LT);
-            else if(currentMode == MotionMode::PUSH_UP) angles = kinematics.pushUp(CROSS);
+            else if(currentMode == MotionMode::PUSH_UP) angles = kinematics.pushUp(CROSS, TRIANGLE);
             else if(currentMode == MotionMode::DANCE) angles = kinematics.dance(DPAD_U, DPAD_D, DPAD_L, DPAD_R);
+            else angles = kinematics.home();
         }
 
         // sensors_event_t a, g, temp;

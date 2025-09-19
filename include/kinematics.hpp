@@ -21,7 +21,7 @@ public:
 
     QuadJointAngles home();
     QuadJointAngles walk(int RFB, int RLR, int LT);
-    QuadJointAngles pushUp(bool);
+    QuadJointAngles pushUp(bool, bool);
     QuadJointAngles dance(bool, bool, bool, bool);
 
 

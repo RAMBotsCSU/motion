@@ -476,10 +476,12 @@ QuadJointAngles Kinematics::pushUp(bool cross_press, bool triangle_press) {
     int pushUpPos = maxLegHeight;
     int sitPos = maxLegHeight;
 
+    QuadJointAngles angles = {};
+
     if (triangle_press) { // back legs go down
       sitPos = maxLegHeight - 20;
 
-      QuadJointAngles angles = {
+      angles = {
         translate (1, 0, 0, pushUpPos, 0, 0, 0),
         translate (2, 0, 0, pushUpPos, 0, 0, 0),
         translate (3, 0, 0, sitPos, 0, 0, 0),
@@ -490,7 +492,7 @@ QuadJointAngles Kinematics::pushUp(bool cross_press, bool triangle_press) {
     if (cross_press) { // all legs go down
       pushUpPos = maxLegHeight - 20;
       
-      QuadJointAngles angles = {
+      angles = {
         translate (1, 0, 0, pushUpPos, 0, 0, 0),
         translate (2, 0, 0, pushUpPos, 0, 0, 0),
         translate (3, 0, 0, pushUpPos, 0, 0, 0),

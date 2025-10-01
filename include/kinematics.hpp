@@ -20,9 +20,15 @@ public:
     void reset(void);
 
     QuadJointAngles home();
-    QuadJointAngles walk(int RFB, int RLR, int LT);
-    QuadJointAngles pushUp(bool);
-    QuadJointAngles dance(bool, bool, bool, bool);
+    QuadJointAngles walk(int RFB, int RLR, int LT,
+                        float IMUpitch = 0.0f, float IMUroll = 0.0f);
+
+    QuadJointAngles pushUp(bool cross_press, bool triangle_press,
+                        float IMUpitch = 0.0f, float IMUroll = 0.0f);
+
+    QuadJointAngles dance(bool up, bool down, bool left, bool right,
+                        float IMUpitch = 0.0f, float IMUroll = 0.0f);
+
 
 
 private:

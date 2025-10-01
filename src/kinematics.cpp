@@ -310,7 +310,7 @@ const int maxLegHeight = 380,
     minLegHeight = 320;
 
 // simple walking
-QuadJointAngles Kinematics::walk(int RFB, int RLR, int LT) {
+QuadJointAngles Kinematics::walk(int RFB, int RLR, int LT, float IMUpitch, float IMUroll) {
     unsigned long now = millis();
 
     RFB = map(RFB, -128, 128, -40, 40);  // mm
@@ -444,21 +444,11 @@ QuadJointAngles Kinematics::walk(int RFB, int RLR, int LT) {
         // Log("=== stepHyp: %f, timerScale: %f\n", stepHyp, timerScale);
     }
 
-    float IMUpitch = 0,
-        IMUroll = 0;
+    float legTransX = IMUpitch * -2.0f;
+    float legTransY = IMUroll  * -2.0f;
 
-    float legTransX = IMUpitch * -2,
-        legTransY = IMUroll * -2,
-
-        // legTransXFiltered = filter(legTransX, legTransXFiltered, 50),
-        // legTransYFiltered = filter(legTransY, legTransYFiltered, 50),
-
-        legRoll = IMUroll * -0.5,
-        legPitch = IMUpitch * 0.5;
-
-        // legRollFiltered = filter(legRoll, legRollFiltered, 60),
-        // legPitchFiltered = filter(legPitch, legPitchFiltered, 60);
-
+    float legRoll   = IMUroll  * -0.5f;
+    float legPitch  = IMUpitch *  0.5f;
 
     QuadJointAngles angles = {
         translate(1, fr_RFB - legTransX, fr_RLR - legTransY, legLength1, legRoll, legPitch, 0),
@@ -472,18 +462,21 @@ QuadJointAngles Kinematics::walk(int RFB, int RLR, int LT) {
 
 // push ups and sitting
 // If triangle is pressed, sparky sits. If cross is pressed, sparky goes down on all 4 legs. If both are pressed, sparky goes down on all 4 legs.
-QuadJointAngles Kinematics::pushUp(bool cross_press, bool triangle_press) {
+QuadJointAngles Kinematics::pushUp(bool cross_press, bool triangle_press, float IMUpitch, float IMUroll) {
     int pushUpPos = maxLegHeight;
     int sitPos = maxLegHeight;
+
+    float corrRoll = IMUroll * -03f; // correct for roll
+    float corrPitch = IMUpitch * -0.3f; // correct for pitch
 
     if (triangle_press) { // back legs go down
       sitPos = maxLegHeight - 20;
 
       QuadJointAngles angles = {
-        translate (1, 0, 0, pushUpPos, 0, 0, 0),
-        translate (2, 0, 0, pushUpPos, 0, 0, 0),
-        translate (3, 0, 0, sitPos, 0, 0, 0),
-        translate (4, 0, 0, sitPos, 0, 0, 0),
+        translate (1, 0, 0, pushUpPos, corrRoll, corrPitch, 0),
+        translate (2, 0, 0, pushUpPos, corrRoll, corrPitch, 0),
+        translate (3, 0, 0, sitPos, corrRoll, corrPitch, 0),
+        translate (4, 0, 0, sitPos, corrRoll, corrPitch, 0),
       };
     }
 
@@ -491,10 +484,10 @@ QuadJointAngles Kinematics::pushUp(bool cross_press, bool triangle_press) {
       pushUpPos = maxLegHeight - 20;
       
       QuadJointAngles angles = {
-        translate (1, 0, 0, pushUpPos, 0, 0, 0),
-        translate (2, 0, 0, pushUpPos, 0, 0, 0),
-        translate (3, 0, 0, pushUpPos, 0, 0, 0),
-        translate (4, 0, 0, pushUpPos, 0, 0, 0),
+        translate (1, 0, 0, pushUpPos, corrRoll, corrPitch, 0),
+        translate (2, 0, 0, pushUpPos, corrRoll, corrPitch, 0),
+        translate (3, 0, 0, pushUpPos, corrRoll, corrPitch, 0),
+        translate (4, 0, 0, pushUpPos, corrRoll, corrPitch, 0),
       };
     }
 
@@ -529,10 +522,10 @@ QuadJointAngles Kinematics::dance(bool up, bool down, bool left, bool right) {
         }
 
         angles = {
-            translate(1, 0, 0, maxLegHeight, dancePos, 0, 0),
-            translate(2, 0, 0, maxLegHeight, dancePos, 0, 0),
-            translate(3, 0, 0, maxLegHeight, dancePos, 0, 0),
-            translate(4, 0, 0, maxLegHeight, dancePos, 0, 0),
+            translate(1, 0, 0, maxLegHeight, dancePos + IMUroll * -0.2f, IMUpitch * 0.2f, 0),
+            translate(2, 0, 0, maxLegHeight, dancePos + IMUroll * -0.2f, IMUpitch * 0.2f, 0),
+            translate(3, 0, 0, maxLegHeight, dancePos + IMUroll * -0.2f, IMUpitch * 0.2f, 0),
+            translate(4, 0, 0, maxLegHeight, dancePos + IMUroll * -0.2f, IMUpitch * 0.2f, 0),
         };
     }
 
@@ -552,15 +545,6 @@ QuadJointAngles Kinematics::dance(bool up, bool down, bool left, bool right) {
             translate(4, 0, 0, maxLegHeight, 0, dancePos, 0),
         };
     }
-
-    // else if (dance3) {
-    //     dance1Flag = 0;
-    //     dance2Flag = 0;
-    //     dance4Flag = 0;
-
-    //     //dance based on flag here
-    //     dance3Flag++;
-    // }
 
     else if (left) { // Bop (all legs go up and down)
         dancing = true;
@@ -584,17 +568,17 @@ QuadJointAngles Kinematics::dance(bool up, bool down, bool left, bool right) {
         int dancePos2;
 
         if (step==0) {
-            dancePos = maxLegHeight - 14;
-            dancePos2 = maxLegHeight;
+            dancePos = maxLegHeight - 10;
+            dancePos2 = maxLegHeight + 5;
         } else if (step==1){
-            dancePos = maxLegHeight - 14;
-            dancePos2 = maxLegHeight - 14;
+            dancePos = maxLegHeight - 10;
+            dancePos2 = maxLegHeight - 10;
         } else if (step==2){
-            dancePos = maxLegHeight;
-            dancePos2 = maxLegHeight - 14;
+            dancePos = maxLegHeight + 5;
+            dancePos2 = maxLegHeight - 10;
         } else {
-            dancePos = maxLegHeight;
-            dancePos2 = maxLegHeight;
+            dancePos = maxLegHeight + 5;
+            dancePos2 = maxLegHeight + 5;
         }
 
         angles = {
@@ -612,6 +596,17 @@ QuadJointAngles Kinematics::dance(bool up, bool down, bool left, bool right) {
         angles = home();
     }
 
+    return angles;
+}
+
+// Stable position to lay down when powered off
+QuadJointAngles Kinematics::EmergencyShutdown() {
+    QuadJointAngles angles = {
+        translate(1, 5, -5, maxLegHeight - 20, 0, 0, 0),
+        translate(2, 5, 5, maxLegHeight - 20, 0, 0, 0),
+        translate(3, -5, 5, maxLegHeight - 20, 0, 0, 0),
+        translate(4, -5, -5, maxLegHeight - 20, 0, 0, 0),
+    };
     return angles;
 }
 

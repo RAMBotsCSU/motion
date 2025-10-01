@@ -4,6 +4,19 @@
 #include "log.hpp"
 #include "utils.hpp"
 #include "MotionProtocol_generated.h"
+#include "MPU6050.h"
+
+#define Gyr_Gain 0.00763358
+
+static float IMUpitch = 0.0f;
+static float IMUroll  = 0.0f;
+
+static float mixPitch = 0.0f;
+static float mixRoll  = 0.0f;
+
+// These values are copied from Bruton's code. They can be adjusted to change the calibrated offsets for the IMU
+static const float pitchTrim = 2.7f;
+static const float rollTrim  = -5.0f;
 
 Sparky::Sparky()
     : odrive{ODrive(Serial1), ODrive(Serial2), ODrive(Serial3), // mapping for odrives
@@ -80,8 +93,8 @@ void Sparky::update() {
         if(!enabled) {
             angles = kinematics.home();
         } else {
-            if(currentMode == MotionMode::WALK) angles = kinematics.walk(RFB, RLR, LT);
-            else if(currentMode == MotionMode::PUSH_UP) angles = kinematics.pushUp(CROSS, TRIANGLE);
+            if(currentMode == MotionMode::WALK) angles = kinematics.walk(RFB, RLR, LT, IMUpitch, IMUroll);
+            else if(currentMode == MotionMode::PUSH_UP) angles = kinematics.pushUp(CROSS, TRIANGLE, IMUpitch, IMUroll);
             else if(currentMode == MotionMode::DANCE) angles = kinematics.dance(DPAD_U, DPAD_D, DPAD_L, DPAD_R);
             else angles = kinematics.home();
         }
@@ -92,6 +105,36 @@ void Sparky::update() {
         // Log("Acceleration X: %f, Y: %f, Z: %f m/s^2\n", a.acceleration.x, a.acceleration.y, a.acceleration.z);
         // Log("Rotation X: %f, Y: %f, Z: %f rad/s\n", g.gyro.x, g.gyro.y, g.gyro.z);
         // Log("Temperature: %f degC\n", temp.temperature);
+
+
+        // ====== IMU update ======
+        {
+            sensors_event_t a, g, temp;
+            mpu.getEvent(&a, &g, &temp);
+
+            // Calculate accel tilt (deg)
+            float accelPitch = atan2(a.acceleration.y, a.acceleration.z) * Gyr_Gain;
+            float accelRoll  = atan2(a.acceleration.x, a.acceleration.z) * Gyr_Gain;
+
+            // Gyro integration (deg/s * dt)
+            float dt = TICK_MS / 1000.0f;
+            float gyroPitchRate = g.gyro.x * Gyr_Gain;
+            float gyroRollRate  = g.gyro.y * Gyr_Gain;
+
+            // Complementary filter
+            const float K = 0.9f;
+            const float A = K / (K + dt);
+
+            mixPitch = A * (mixPitch + gyroPitchRate * dt) + (1 - A) * accelPitch;
+            mixRoll  = A * (mixRoll  + gyroRollRate  * dt) + (1 - A) * accelRoll;
+
+            // Trimmed values
+            IMUpitch = mixPitch + pitchTrim;
+            IMUroll  = mixRoll  + rollTrim;
+
+            // (Optional debug)
+            // Log("IMU pitch: %f, roll: %f\n", IMUpitch, IMUroll);
+        }
 
 
         leg[0].move(angles.FR);

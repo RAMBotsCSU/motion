@@ -469,10 +469,12 @@ QuadJointAngles Kinematics::pushUp(bool cross_press, bool triangle_press, float 
     float corrRoll = IMUroll * -03f; // correct for roll
     float corrPitch = IMUpitch * -0.3f; // correct for pitch
 
+    QuadJointAngles angles = {};
+
     if (triangle_press) { // back legs go down
       sitPos = maxLegHeight - 20;
 
-      QuadJointAngles angles = {
+      angles = {
         translate (1, 0, 0, pushUpPos, corrRoll, corrPitch, 0),
         translate (2, 0, 0, pushUpPos, corrRoll, corrPitch, 0),
         translate (3, 0, 0, sitPos, corrRoll, corrPitch, 0),
@@ -483,7 +485,7 @@ QuadJointAngles Kinematics::pushUp(bool cross_press, bool triangle_press, float 
     if (cross_press) { // all legs go down
       pushUpPos = maxLegHeight - 20;
       
-      QuadJointAngles angles = {
+      angles = {
         translate (1, 0, 0, pushUpPos, corrRoll, corrPitch, 0),
         translate (2, 0, 0, pushUpPos, corrRoll, corrPitch, 0),
         translate (3, 0, 0, pushUpPos, corrRoll, corrPitch, 0),

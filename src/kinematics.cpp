@@ -466,13 +466,13 @@ QuadJointAngles Kinematics::pushUp(bool cross_press, bool triangle_press, float 
     int pushUpPos = maxLegHeight;
     int sitPos = maxLegHeight;
 
-    float corrRoll = IMUroll * -03f; // correct for roll
+    float corrRoll = IMUroll * -0.3f; // correct for roll
     float corrPitch = IMUpitch * -0.3f; // correct for pitch
 
     QuadJointAngles angles = {};
 
     if (triangle_press) { // back legs go down
-      sitPos = maxLegHeight - 20;
+      sitPos = maxLegHeight - 40;
 
       angles = {
         translate (1, 0, 0, pushUpPos, corrRoll, corrPitch, 0),
@@ -483,7 +483,7 @@ QuadJointAngles Kinematics::pushUp(bool cross_press, bool triangle_press, float 
     }
 
     if (cross_press) { // all legs go down
-      pushUpPos = maxLegHeight - 20;
+      pushUpPos = maxLegHeight - 40;
       
       angles = {
         translate (1, 0, 0, pushUpPos, corrRoll, corrPitch, 0),
@@ -552,9 +552,9 @@ QuadJointAngles Kinematics::dance(bool up, bool down, bool left, bool right) {
         dancing = true;
 
         if (step % 2 == 0) {
-            dancePos = maxLegHeight + 5;
+            dancePos = maxLegHeight;
         } else {
-            dancePos = maxLegHeight - 5;
+            dancePos = maxLegHeight - 10;
         }
 
         angles = {
@@ -570,17 +570,17 @@ QuadJointAngles Kinematics::dance(bool up, bool down, bool left, bool right) {
         int dancePos2;
 
         if (step==0) {
-            dancePos = maxLegHeight - 10;
-            dancePos2 = maxLegHeight + 5;
+            dancePos = maxLegHeight - 20;
+            dancePos2 = maxLegHeight;
         } else if (step==1){
-            dancePos = maxLegHeight - 10;
-            dancePos2 = maxLegHeight - 10;
+            dancePos = maxLegHeight - 20;
+            dancePos2 = maxLegHeight - 20;
         } else if (step==2){
-            dancePos = maxLegHeight + 5;
-            dancePos2 = maxLegHeight - 10;
+            dancePos = maxLegHeight;
+            dancePos2 = maxLegHeight - 20;
         } else {
-            dancePos = maxLegHeight + 5;
-            dancePos2 = maxLegHeight + 5;
+            dancePos = maxLegHeight;
+            dancePos2 = maxLegHeight;
         }
 
         angles = {

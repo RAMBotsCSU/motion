@@ -204,9 +204,9 @@ void Sparky::update() {
                     if(requestedMode == MotionMode::WALK) {
                         setSpeed(0.7);
                     } else if (requestedMode == MotionMode::PUSH_UP) {
-                        setSpeed(0.05);
+                        setSpeed(0.06); // Previously 0.05
                     } else if (requestedMode == MotionMode::DANCE) {
-                        setSpeed(0.19);
+                        setSpeed(0.17); // Previously 0.19
                     }
 
                     kinematics.reset();

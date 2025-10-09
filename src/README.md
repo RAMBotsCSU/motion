@@ -90,17 +90,34 @@ Axis::move(float pos):
 * If positions are different, sets target position to pos, then sends targetPos + offset to the ODrive
 
 Axis::getOffset():
-
+* Returns the current offset from starting position
 
 Axis::fetchError():
-
+* Returns ODrive error as an integer
 
 Axis::setSpeed(float speed):
-
+* Takes a float in, multiplies it by static GLOBAL_SPEED variable, then logs the calculated speed
+* Sets speed of each axis of the ODrive to calculated speed
 
 ### kinematics.cpp
 
+Kinematics::translate(int leg, float xIn, float yIn, float zIn, float roll, float pitch, float yawIn)
+* Inverse kinematics calculation that takes in the requested position of a leg, then outputs necessary hip/shoulder/knee angles
+* Figure it out if you really need to. You probably don't.
+
+Kinematics::walk(int RFB, int RLR, int LT, float IMUpitch, float IMUroll)
+* 
+
+Kinematics::pushUp(bool cross_press, bool triangle_press, float IMUpitch, float IMUroll)
+* Checks if cross or triangle are pressed. If cross is pressed, all legs go down. If triangle is pressed, only the back legs go down. If both are pressed, all legs go down
+* Corrects for roll and pitch based on IMU data, scaled by 0.3
+
+Kinematics::dance(bool up, bool down, bool left, bool right, float IMUpitch, float IMUroll)
+
+
 ### leg.cpp
+
+
 
 ### log.cpp
 

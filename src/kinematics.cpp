@@ -500,7 +500,7 @@ QuadJointAngles Kinematics::pushUp(bool cross_press, bool triangle_press, float 
 bool dancing = false;
 float dancePos = 0.0f;
 unsigned int danceTimer = 250;
-QuadJointAngles Kinematics::dance(bool up, bool down, bool left, bool right) {
+QuadJointAngles Kinematics::dance(bool up, bool down, bool left, bool right, float IMUpitch, float IMUroll) {
     unsigned long now = millis();
 
     // Log("=== %d %d %d %d\n", up, down, left, right);

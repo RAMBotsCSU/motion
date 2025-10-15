@@ -113,7 +113,8 @@ Kinematics::pushUp(bool cross_press, bool triangle_press, float IMUpitch, float 
 * Corrects for roll and pitch based on IMU data, scaled by 0.3
 
 Kinematics::dance(bool up, bool down, bool left, bool right, float IMUpitch, float IMUroll)
-
+* Loops through step 1-4
+* Based on the given D-pad input, chooses one of the following
 
 ### leg.cpp
 

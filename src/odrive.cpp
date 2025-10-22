@@ -17,6 +17,8 @@ std::string ODRIVE_CONFIG[] = {
 
     "axis0.encoder.config.abs_spi_cs_gpio_pin 7", // Set pin to SPI mode
     "axis1.encoder.config.abs_spi_cs_gpio_pin 8", // Set pin to SPI mode
+    "axis0.encoder.config.mode 257",
+    "axis1.encoder.config.mode 257"
 };
 
 

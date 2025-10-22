@@ -97,7 +97,7 @@ void Sparky::update() {
             else if(currentMode == MotionMode::PUSH_UP) angles = kinematics.pushUp(CROSS, TRIANGLE, IMUpitch, IMUroll);
             else if(currentMode == MotionMode::DANCE) angles = kinematics.dance(DPAD_U, DPAD_D, DPAD_L, DPAD_R, IMUpitch, IMUroll);
             //new
-            else if(currentMode == MotionMode::LEG_TESTING) angles = kinematics.legTesting(TRIANGLE, SQUARE, CROSS, CIRCLE, IMUpitch, IMUroll);
+            else if(currentMode == MotionMode::LEG_TEST) angles = kinematics.legTesting(TRIANGLE, SQUARE, CROSS, CIRCLE, IMUpitch, IMUroll);
             
             else angles = kinematics.home();
         }

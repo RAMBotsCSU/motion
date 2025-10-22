@@ -28,6 +28,9 @@ public:
 
     QuadJointAngles dance(bool up, bool down, bool left, bool right,
                         float IMUpitch = 0.0f, float IMUroll = 0.0f);
+    QuadJointAngles EmergencyShutdown();
+    QuadJointAngles legTesting(bool triangle_press, bool square_press, bool cross_press, bool o_press,
+                        float IMUpitch = 0.0f, float IMUroll = 0.0f);
 
 
 

@@ -13,6 +13,7 @@ enum MotionMode {
     PUSH_UP = 4,
     DANCE   = 5,
     WALK    = 6,
+    LEG_TEST= 3,
 };
 
 

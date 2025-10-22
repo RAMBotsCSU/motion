@@ -28,7 +28,7 @@ public:
 
     QuadJointAngles dance(bool up, bool down, bool left, bool right,
                         float IMUpitch = 0.0f, float IMUroll = 0.0f);
-
+    QuadJointAngles Kinematics::EmergencyShutdown();
 
 
 private:

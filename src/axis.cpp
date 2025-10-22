@@ -17,7 +17,7 @@ std::string AXIS_CONFIG[] = {
     "controller.config.pos_gain 60",
     "controller.config.vel_gain 0.1",
     "controller.config.vel_integrator_gain 0.2",
-    "controller.config.vel_limit 500",
+    "controller.config.vel_limit math.inf", //look into math.inf
 
     "motor.config.torque_constant 0.025", // 8.27/90
     "motor.config.current_lim 22.0",

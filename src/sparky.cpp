@@ -99,14 +99,6 @@ void Sparky::update() {
             else angles = kinematics.home();
         }
 
-        // sensors_event_t a, g, temp;
-        // mpu.getEvent(&a, &g, &temp);
-
-        // Log("Acceleration X: %f, Y: %f, Z: %f m/s^2\n", a.acceleration.x, a.acceleration.y, a.acceleration.z);
-        // Log("Rotation X: %f, Y: %f, Z: %f rad/s\n", g.gyro.x, g.gyro.y, g.gyro.z);
-        // Log("Temperature: %f degC\n", temp.temperature);
-
-
         // ====== IMU update ======
         {
             sensors_event_t a, g, temp;
@@ -133,9 +125,8 @@ void Sparky::update() {
             IMUroll  = mixRoll  + rollTrim;
 
             // (Optional debug)
-            // Log("IMU pitch: %f, roll: %f\n", IMUpitch, IMUroll);
+            Log("IMU pitch: %f, roll: %f\n", IMUpitch, IMUroll);
         }
-
 
         leg[0].move(angles.FR);
         leg[1].move(angles.FL);

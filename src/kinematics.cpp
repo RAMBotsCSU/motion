@@ -469,7 +469,12 @@ QuadJointAngles Kinematics::pushUp(bool cross_press, bool triangle_press, float 
     float corrRoll = IMUroll * -0.3f; // correct for roll
     float corrPitch = IMUpitch * -0.3f; // correct for pitch
 
-    QuadJointAngles angles = {};
+    QuadJointAngles angles = {
+        translate (1, 0, 0, maxLegHeight, corrRoll, corrPitch, 0),
+        translate (2, 0, 0, maxLegHeight, corrRoll, corrPitch, 0),
+        translate (3, 0, 0, maxLegHeight, corrRoll, corrPitch, 0),
+        translate (4, 0, 0, maxLegHeight, corrRoll, corrPitch, 0),
+    };
 
     if (triangle_press) { // back legs go down
       sitPos = maxLegHeight - 40;
@@ -570,14 +575,14 @@ QuadJointAngles Kinematics::dance(bool up, bool down, bool left, bool right, flo
         int dancePos2;
 
         if (step==0) {
-            dancePos = maxLegHeight - 20;
+            dancePos = maxLegHeight - 25;
             dancePos2 = maxLegHeight;
         } else if (step==1){
-            dancePos = maxLegHeight - 20;
-            dancePos2 = maxLegHeight - 20;
+            dancePos = maxLegHeight - 25;
+            dancePos2 = maxLegHeight - 25;
         } else if (step==2){
             dancePos = maxLegHeight;
-            dancePos2 = maxLegHeight - 20;
+            dancePos2 = maxLegHeight - 25;
         } else {
             dancePos = maxLegHeight;
             dancePos2 = maxLegHeight;

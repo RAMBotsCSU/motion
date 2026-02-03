@@ -606,6 +606,31 @@ QuadJointAngles Kinematics::dance(bool up, bool down, bool left, bool right, flo
     return angles;
 }
 
+float Kinematics::ema(float current, float target, float alpha) {
+  return current * (1.0 - alpha) + target * alpha;
+}
+
+QuadJointAngles Kinematics::legControl(float left_stick_horizontal, float left_stick_vertical, float left_trigger, float right_stick_horizontal, float right_stick_vertical, float right_trigger) {
+    int upperBound = maxLegHeight;
+    int lowerBound = minLegHeight;
+
+    left_legs_x = ema(left_legs_x, -map(left_stick_vertical, -1, 1, -300, 300), alpha);
+    left_legs_y = ema(left_legs_y, -map(left_stick_horizontal, -1, 1, -100, 100), alpha);
+    left_legs_z = ema(left_legs_z, map(left_trigger, 0, 1, upperBound, lowerBound), alpha);
+
+    right_legs_x = ema(right_legs_x, -map(right_stick_vertical, -1, 1, -300, 300), alpha);
+    right_legs_y = ema(right_legs_y, map(right_stick_horizontal, -1, 1, -100, 100), alpha);
+    right_legs_z = ema(right_legs_z, map(right_trigger, 0, 1, upperBound, lowerBound), alpha);
+
+    QuadJointAngles angles = {
+        translate(2, left_legs_x, left_legs_y, left_legs_z, 0, 0, 0),
+        translate(1, right_legs_x, right_legs_y, right_legs_z, 0, 0, 0),
+        translate(4, right_legs_x, right_legs_y, right_legs_z, 0, 0, 0),
+        translate(3, left_legs_x, left_legs_y, left_legs_z, 0, 0, 0),
+    };
+    return angles;
+}
+
 // Stable position to lay down when powered off
 QuadJointAngles Kinematics::EmergencyShutdown() {
     QuadJointAngles angles = {

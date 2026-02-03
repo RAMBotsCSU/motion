@@ -14,6 +14,7 @@ enum MotionMode {
     DANCE   = 5,
     WALK    = 6,
     LEG_TEST= 3,
+    LEG_CONTROL = 2
 };
 
 

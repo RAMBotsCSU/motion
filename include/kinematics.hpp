@@ -1,6 +1,9 @@
 #ifndef KINEMATICS_H
 #define KINEMATICS_H
 
+const int maxLegHeight = 380,
+    minLegHeight = 320;
+
 struct JointAngles {
     float shoulder;
     float knee;

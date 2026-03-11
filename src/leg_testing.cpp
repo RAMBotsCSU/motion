@@ -7,8 +7,6 @@
 #include "leg_testing.hpp"
 
 // legs will be able to be tested individually when buttons are pressed
-const int maxLegHeight = 380,
-    minLegHeight = 320;
 
 //if triangle is pressed, front right leg moves
 //if square is pressed, front left leg moves

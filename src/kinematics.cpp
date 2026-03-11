@@ -306,8 +306,6 @@ void Kinematics::reset() {
     lastStepAt = 0;
 }
 
-const int maxLegHeight = 380,
-    minLegHeight = 320;
 
 // simple walking
 QuadJointAngles Kinematics::walk(int RFB, int RLR, int LT, float IMUpitch, float IMUroll) {

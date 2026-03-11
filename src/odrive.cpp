@@ -13,7 +13,7 @@ std::string ODRIVE_CONFIG[] = {
     "config.dc_max_negative_current -3.0",
     "config.max_regen_current 0",
     "config.gpio7_mode 0", // Set pin to digital
-    "config.gpio8_mode 0," // Set pin to digital
+    "config.gpio8_mode 0", // Set pin to digital
 
     "axis0.encoder.config.abs_spi_cs_gpio_pin 7", // Set pin to SPI mode
     "axis1.encoder.config.abs_spi_cs_gpio_pin 8", // Set pin to SPI mode

@@ -242,9 +242,9 @@ void Sparky::update() {
             builder.Finish(odStatus);
 
             uint8_t *buf = builder.GetBufferPointer();
-
-            SerialUSB.write(buf, builder.GetSize());
-            SerialUSB.write('\n');
+            uint32_t size = builder.GetSize();
+            SerialUSB.write((uint8_t*)&size, 4);
+            SerialUSB.write(buf, size);
         }
     }
 }

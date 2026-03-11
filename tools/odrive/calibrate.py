@@ -3,8 +3,6 @@ from time import sleep
 import odrive
 from odrive.enums import AxisState, MotorError, EncoderError
 
-from fibre.libfibre import ObjectLostError
-
 def connect():
     while True:
         try:
@@ -22,7 +20,7 @@ odr = connect()
 
 try:
     odr.erase_configuration()
-except ObjectLostError:
+except Exception:
     pass
 
 odr = connect()
@@ -42,7 +40,7 @@ for i, axis in enumerate([odr.axis0, odr.axis1]):
 
 try:
     odr.save_configuration()
-except ObjectLostError:
+except Exception:
     pass
 
 odr = connect()
@@ -77,7 +75,7 @@ odr.clear_errors()
 
 try:
     odr.save_configuration()
-except ObjectLostError:
+except Exception:
     pass
 
 print("Done!")

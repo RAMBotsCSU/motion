@@ -67,6 +67,8 @@ Axis::init():
 * Updates zero position offsets
 * Sets the axis to closed loop by calling Axis::setClosedLoop()
 * Calls Axis::fetchState() and logs the state of the axis
+* Periodically ensures any axis that has fallen back to IDLE (or otherwise
+  lost closed-loop) is commanded back into closed-loop control
 * Sends axis config to ODrives on each axis
 * Checks if ODrive response has a nonzero length
 * If the response length is nonzero, sending the axis config failed

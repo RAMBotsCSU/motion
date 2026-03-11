@@ -31,6 +31,10 @@ class Axis {
         void setSpeed(float);
 
         void move(float);
+
+        // ensure the axis is in closed-loop control; if it has fallen into
+        // idle/other mode this will request a transition
+        void ensureClosedLoop(void);
     };
 
 #endif  // AXIS_H

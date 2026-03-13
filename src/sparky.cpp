@@ -88,6 +88,8 @@ void Sparky::update() {
             }
         }
 
+        enabled = _enabled;
+
         QuadJointAngles angles;
 
         if(!enabled) {

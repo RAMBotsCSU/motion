@@ -100,9 +100,17 @@ void Sparky::update() {
             else if(currentMode == MotionMode::DANCE) angles = kinematics.dance(DPAD_U, DPAD_D, DPAD_L, DPAD_R, IMUpitch, IMUroll);
             //new
             else if(currentMode == MotionMode::LEG_TEST) angles = kinematics.legTesting(TRIANGLE, SQUARE, CROSS, CIRCLE, IMUpitch, IMUroll);
-            else if(currentMode == MotionMode::LEG_CONTROL) angles = kinematics.legControl(RFB, RLR, RT, LFB, LLR, LT);
+            else if(currentMode == MotionMode::LEG_CONTROL) angles = kinematics.legControl(LLR, LFB, LT, RFB, RLR, RT);
             else angles = kinematics.home();
         }
+        
+        // sensors_event_t a, g, temp;
+        // mpu.getEvent(&a, &g, &temp);
+
+        // Log("Acceleration X: %f, Y: %f, Z: %f m/s^2\n", a.acceleration.x, a.acceleration.y, a.acceleration.z);
+        // Log("Rotation X: %f, Y: %f, Z: %f rad/s\n", g.gyro.x, g.gyro.y, g.gyro.z);
+        // Log("Temperature: %f degC\n", temp.temperature);
+
 
         // ====== IMU update ======
         {
@@ -130,8 +138,9 @@ void Sparky::update() {
             IMUroll  = mixRoll  + rollTrim;
 
             // (Optional debug)
-            Log("IMU pitch: %f, roll: %f\n", IMUpitch, IMUroll);
+            // Log("IMU pitch: %f, roll: %f\n", IMUpitch, IMUroll);
         }
+
 
         leg[0].move(angles.FR);
         leg[1].move(angles.FL);
@@ -160,6 +169,9 @@ void Sparky::update() {
         Log("odr%d - ax%d: %d\n", ODck / 2, ODck % 2, err);
 
         if(err > 0) axis->reset();
+
+        // make sure idle axes are forced back into closed-loop
+        axis->ensureClosedLoop();
 
         if(ODck == 11) ODck = 0;
         else ODck++;
@@ -203,6 +215,10 @@ void Sparky::update() {
                         setSpeed(0.06); // Previously 0.05
                     } else if (requestedMode == MotionMode::DANCE) {
                         setSpeed(0.17); // Previously 0.19
+                    } else if (requestedMode == MotionMode:: LEG_TEST) {
+                        setSpeed(0.06);
+                    } else if (requestedMode == MotionMode::LEG_CONTROL){
+                        setSpeed(0.7);
                     }
 
                     kinematics.reset();
@@ -244,9 +260,9 @@ void Sparky::update() {
             builder.Finish(odStatus);
 
             uint8_t *buf = builder.GetBufferPointer();
-            uint32_t size = builder.GetSize();
-            SerialUSB.write((uint8_t*)&size, 4);
-            SerialUSB.write(buf, size);
+
+            SerialUSB.write(buf, builder.GetSize());
+            SerialUSB.write('\n');
         }
     }
 }

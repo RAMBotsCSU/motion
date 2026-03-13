@@ -93,6 +93,18 @@ void Axis::setClosedLoop() {
     odrive.send("w axis%d.requested_state %d", id, AXIS_STATE_CLOSED_LOOP_CONTROL);
 }
 
+// Verify the axis isn't sitting in IDLE (or any non-closed-loop) and, if it
+// is, ask the ODrive to enter closed-loop control again.  This is intended for
+// use in the periodic error/check loop so the firmware will recover if the
+// drive silently drops back to idle when no command has been sent.
+void Axis::ensureClosedLoop() {
+    int state = fetchState();
+    if(state != AXIS_STATE_CLOSED_LOOP_CONTROL) {
+        Log("  axis%d state %d, requesting closed loop\n", id, state);
+        setClosedLoop();
+    }
+}
+
 int Axis::fetchState() {
     return odrive.send("r axis%d.current_state", id).toInt();
 }

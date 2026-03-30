@@ -244,6 +244,13 @@ void Sparky::update() {
             CIRCLE = remote_data->circle();
             SQUARE = remote_data->square();
 
+            // Trigger modifyGains on SQUARE press (rising edge)
+            if (SQUARE && !lastSQUARE) {
+                modifyGains();
+                Log("Modifying ODrive gains\n");
+            }
+            lastSQUARE = SQUARE;
+
             // ODrive status
             flatbuffers::FlatBufferBuilder builder(1024);
             auto odStatus = MotionProtocol::CreateODriveStatus(
@@ -272,5 +279,31 @@ void Sparky::setSpeed(float speed) {
     for (ODrive& od : odrive) {
         od.axis0.setSpeed(speed);
         od.axis1.setSpeed(speed);
+    }
+}
+
+void Sparky::modifyGains() {
+    const float posGainKnee     = 17.5;
+    const float posGainHips     = 50.0;
+    const float posGainShoulder = 20.0;
+    const float velGain         = 0.1;
+    const float integrator      = 0.08;
+
+    // pos_gain per odrive per axis [odrive][axis]
+    const float posGains[6][2] = {
+        { posGainHips,  posGainHips     },  // ODrive 0 (Serial1)
+        { posGainKnee,  posGainShoulder },  // ODrive 1 (Serial2)
+        { posGainKnee,  posGainShoulder },  // ODrive 2 (Serial3)
+        { posGainHips,  posGainHips     },  // ODrive 3 (Serial4)
+        { posGainKnee,  posGainShoulder },  // ODrive 4 (Serial5)
+        { posGainKnee,  posGainShoulder },  // ODrive 5 (Serial6)
+    };
+
+    for (int i = 0; i < 6; i++) {
+        for (int axis = 0; axis < 2; axis++) {
+            odrive[i].send("w axis%d.controller.config.pos_gain %f", axis, posGains[i][axis]);
+            odrive[i].send("w axis%d.controller.config.vel_gain %f", axis, velGain);
+            odrive[i].send("w axis%d.controller.config.vel_integrator_gain %f", axis, integrator);
+        }
     }
 }

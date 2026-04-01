@@ -304,6 +304,17 @@ JointAngles Kinematics::translate(int leg, float xIn, float yIn, float zIn, floa
 void Kinematics::reset() {
     step = 0;
     lastStepAt = 0;
+    lastRFB = 0;
+    lastRLR = 0;
+    lastLT = 0;
+    
+    // Reset leg control positions to idle state
+    left_legs_x = 0.0f;
+    left_legs_y = 0.0f;
+    left_legs_z = maxLegHeight;
+    right_legs_x = 0.0f;
+    right_legs_y = 0.0f;
+    right_legs_z = maxLegHeight;
 }
 
 

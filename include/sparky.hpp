@@ -24,6 +24,7 @@ public:
     void setup();
     void update();
     void setSpeed(float);
+    void modifyGains();
 
 
 private:
@@ -35,6 +36,7 @@ private:
 
     int LFB, LLR, LT, RFB, RLR, RT;
     bool DPAD_U, DPAD_D, DPAD_L, DPAD_R, TRIANGLE, CROSS, SQUARE, CIRCLE;
+    bool lastSQUARE = false;
 
     Adafruit_MPU6050 mpu;
 

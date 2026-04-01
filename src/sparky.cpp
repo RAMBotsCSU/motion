@@ -209,6 +209,15 @@ void Sparky::update() {
                 _enabled = remote_data->enabled();
 
                 if(_enabled && requestedMode != currentMode) {
+                    // Move to HOME before switching modes
+                    QuadJointAngles homeAngles = kinematics.home();
+                    leg[0].move(homeAngles.FR);
+                    leg[1].move(homeAngles.FL);
+                    leg[2].move(homeAngles.BL);
+                    leg[3].move(homeAngles.BR);
+
+                    // Optionally, add a short delay here if needed for the robot to reach HOME
+
                     if(requestedMode == MotionMode::WALK) {
                         setSpeed(0.7);
                     } else if (requestedMode == MotionMode::PUSH_UP) {

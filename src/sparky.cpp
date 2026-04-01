@@ -210,7 +210,7 @@ void Sparky::update() {
 
                 if(_enabled && requestedMode != currentMode) {
                     if(requestedMode == MotionMode::WALK) {
-                        setSpeed(0.7);
+                        setSpeed(0.5);
                     } else if (requestedMode == MotionMode::PUSH_UP) {
                         setSpeed(0.06); // Previously 0.05
                     } else if (requestedMode == MotionMode::DANCE) {

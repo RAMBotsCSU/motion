@@ -3,6 +3,6 @@
 
 #define DEBUG false
 #define TICK_MS 10
-#define GLOBAL_SPEED 1.0f
+#define GLOBAL_SPEED 0.6f
 
 #endif  // CONFIG_H

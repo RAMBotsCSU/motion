@@ -330,140 +330,70 @@ QuadJointAngles Kinematics::walk(int RFB, int RLR, int LT, float IMUpitch, float
     lastRLR = RLR;
     lastLT = LT;
 
-    int longLeg1 = maxLegHeight,
-        shortLeg1 = minLegHeight,
-        longLeg2 = maxLegHeight,
-        shortLeg2 = minLegHeight;
+    int longLeg = maxLegHeight;
+    int shortLeg = minLegHeight;
 
     int footOffset = 0;
-    int timer1 = 80 * 1.0 / 0.7 * (1.0f / GLOBAL_SPEED);  // FB gait timer  80
+    int baseTimer = 80 * 1.0 / 0.7 * (1.0f / GLOBAL_SPEED);  // FB gait timer
 
-    // Log("lastRFB: %f lastRLR: %f LTFiltered: %f\n", lastRFB, lastRLR, LTFiltered);
-
-    float legLength1 = 0,
-        legLength2 = 0;
-
-    float fr_RFB = 0,
-        fl_RFB = 0,
-        bl_RFB = 0,
-        br_RFB = 0,
-        fr_RLR = 0,
-        fl_RLR = 0,
-        bl_RLR = 0,
-        br_RLR = 0;
-    float timerScale = 0;
+    float legHeights[4];
+    float legX[4];
+    float legY[4];
 
     if (lastRFB == 0 && lastRLR == 0 && lastLT == 0) {  // controls are centered
         Log("[WALKSTATUS] STANDING STILL\n");
 
-        // position legs a default standing positionS
-        legLength1 = longLeg1;
-        legLength2 = longLeg2;
-        fr_RFB = 0;
-        fl_RFB = 0;
-        bl_RFB = 0;
-        br_RFB = 0;
-        fr_RLR = footOffset;
-        fl_RLR = -footOffset;
-        bl_RLR = -footOffset;
-        br_RLR = footOffset;
-    }
-
-    // walking
-    else {
+        // position legs in default standing position
+        for(int i = 0; i < 4; i++) {
+            legHeights[i] = longLeg;
+            legX[i] = 0;
+            legY[i] = (i % 2 == 0) ? footOffset : -footOffset;
+        }
+    } else {
         Log("[WALKSTATUS] WALKING - %d\n", step);
 
-        if (step == 0) {
-            legLength1 = shortLeg1;
-            legLength2 = longLeg2;
-            fr_RFB = -lastRFB;
-            fl_RFB = lastRFB;
-            bl_RFB = -lastRFB;
-            br_RFB = lastRFB;
-            fr_RLR = (footOffset - lastRLR) + LT;
-            fl_RLR = (-footOffset + lastRLR) - LT;
-            bl_RLR = (-footOffset - lastRLR) - LT;
-            br_RLR = (footOffset + lastRLR) + LT;
+        // Tripod gait: 3 legs down, 1 up
+        // Step 0: leg 1 up, legs 2,3,4 down
+        // Step 1: leg 2 up, legs 1,3,4 down
+        // Step 2: leg 3 up, legs 1,2,4 down
+        // Step 3: leg 4 up, legs 1,2,3 down
+
+        int upLeg = step;
+        float stepX = lastRFB;
+        float stepY = lastRLR + (step % 2 == 0 ? LT : -LT);  // alternate turn direction
+
+        for(int i = 0; i < 4; i++) {
+            if(i == upLeg) {
+                legHeights[i] = shortLeg;
+                legX[i] = stepX;
+                legY[i] = (i % 2 == 0) ? (footOffset + stepY) : (-footOffset + stepY);
+            } else {
+                legHeights[i] = longLeg;
+                legX[i] = 0;
+                legY[i] = (i % 2 == 0) ? footOffset : -footOffset;
+            }
         }
 
-        else if (step == 1) {
-            legLength1 = longLeg1;
-            legLength2 = longLeg2;
-            fr_RFB = -lastRFB;
-            fl_RFB = lastRFB;
-            bl_RFB = -lastRFB;
-            br_RFB = lastRFB;
-            fr_RLR = (footOffset - lastRLR) + LT;
-            fl_RLR = (-footOffset + lastRLR) - LT;
-            bl_RLR = (-footOffset - lastRLR) - LT;
-            br_RLR = (footOffset + lastRLR) + LT;
-        }
-
-        else if (step == 2) {
-            legLength1 = longLeg1;
-            legLength2 = shortLeg2;
-            fr_RFB = lastRFB;
-            fl_RFB = -lastRFB;
-            bl_RFB = lastRFB;
-            br_RFB = -lastRFB;
-            fr_RLR = (footOffset + lastRLR) - LT;
-            fl_RLR = (-footOffset - lastRLR) + LT;
-            bl_RLR = (-footOffset + lastRLR) + LT;
-            br_RLR = (footOffset - lastRLR) - LT;
-        }
-
-        else if (step == 3) {
-            legLength1 = longLeg1;
-            legLength2 = longLeg2;
-            fr_RFB = lastRFB;
-            fl_RFB = -lastRFB;
-            bl_RFB = lastRFB;
-            br_RFB = -lastRFB;
-            fr_RLR = (footOffset + lastRLR) - LT;
-            fl_RLR = (-footOffset - lastRLR) + LT;
-            bl_RLR = (-footOffset + lastRLR) + LT;
-            br_RLR = (footOffset - lastRLR) - LT;
-        }
-
-        float stepLength;
-        float stepWidth;
-        float stepAngle;
-        float stepHyp;
-
-        // timer calcs
-
-        stepLength = abs(fr_RFB);
-        stepWidth = abs(fr_RLR);
-
-        if (stepLength == 0.0) {
-            stepLength = 0.01;  // avoid divide by zero
-        }
-
-        stepAngle = atan(stepLength / stepWidth);    // radians       // work out actual distance of step
-        stepHyp = abs(stepLength / sin(stepAngle));  // mm
-
-        timerScale = timer1 + (stepHyp / 3.5);
+        // Dynamic timer based on step size
+        float stepSize = sqrt(stepX * stepX + stepY * stepY);
+        float timerScale = baseTimer + (stepSize / 5.0f);  // adjust scaling
 
         if(now - lastStepAt > timerScale) {
             lastStepAt = now;
-            if(step == 3) step = 0;
-            else step++;
+            step = (step + 1) % 4;
         }
-
-        // Log("=== stepHyp: %f, timerScale: %f\n", stepHyp, timerScale);
     }
 
     float legTransX = IMUpitch * -2.0f;
     float legTransY = IMUroll  * -2.0f;
-
     float legRoll   = IMUroll  * -0.5f;
     float legPitch  = IMUpitch *  0.5f;
 
     QuadJointAngles angles = {
-        translate(1, fr_RFB - legTransX, fr_RLR - legTransY, legLength1, legRoll, legPitch, 0),
-        translate(2, fl_RFB - legTransX, fl_RLR - legTransY, legLength2, legRoll, legPitch, 0),
-        translate(3, bl_RFB - legTransX, bl_RLR - legTransY, legLength1, legRoll, legPitch, 0),
-        translate(4, br_RFB - legTransX, br_RLR - legTransY, legLength2, legRoll, legPitch, 0),
+        translate(1, legX[0] - legTransX, legY[0] - legTransY, legHeights[0], legRoll, legPitch, 0),
+        translate(2, legX[1] - legTransX, legY[1] - legTransY, legHeights[1], legRoll, legPitch, 0),
+        translate(3, legX[2] - legTransX, legY[2] - legTransY, legHeights[2], legRoll, legPitch, 0),
+        translate(4, legX[3] - legTransX, legY[3] - legTransY, legHeights[3], legRoll, legPitch, 0),
     };
 
     return angles;

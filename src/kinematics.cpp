@@ -340,8 +340,12 @@ QuadJointAngles Kinematics::walk(int RFB, int RLR, int LT, float IMUpitch, float
     float legX[4];
     float legY[4];
 
-    if (lastRFB == 0 && lastRLR == 0 && lastLT == 0) {  // controls are centered
+    if (abs(lastRFB) < 1 && abs(lastRLR) < 1 && abs(lastLT) < 1) {  // controls are centered
         Log("[WALKSTATUS] STANDING STILL\n");
+
+        // Reset step counter when standing still
+        step = 0;
+        lastStepAt = now;
 
         // position legs in default standing position
         for(int i = 0; i < 4; i++) {

@@ -238,7 +238,7 @@ void Sparky::update() {
 
             LFB = thresholdStick(remote_data->lfb());
             LLR = thresholdStick(remote_data->llr());
-            LT = remote_data->lt();
+            LT = thresholdStick(remote_data->lt());
             RFB = thresholdStick(remote_data->rfb());
             RLR = thresholdStick(remote_data->rlr());
             RT = remote_data->rt();

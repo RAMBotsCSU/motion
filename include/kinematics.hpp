@@ -26,7 +26,7 @@ public:
     QuadJointAngles walk(int RFB, int RLR, int LT,
                         float IMUpitch = 0.0f, float IMUroll = 0.0f);
 
-    QuadJointAngles pushUp(bool cross_press, bool triangle_press,
+    QuadJointAngles pushUp(bool cross_press, bool triangle_press, bool circle_press,
                         float IMUpitch = 0.0f, float IMUroll = 0.0f);
 
     QuadJointAngles dance(bool up, bool down, bool left, bool right,
@@ -34,7 +34,7 @@ public:
     QuadJointAngles legControl(float left_stick_horizontal, float left_stick_vertical, 
         float left_trigger, float right_stick_horizontal, float right_stick_vertical, float right_trigger);
     QuadJointAngles EmergencyShutdown();
-    QuadJointAngles legTesting(bool triangle_press, bool square_press, bool cross_press, bool o_press,
+    QuadJointAngles legTesting(bool triangle_press, bool square_press, bool cross_press, bool circle_press,
                         float IMUpitch = 0.0f, float IMUroll = 0.0f);
     
     float ema(float current, float target, float alpha);

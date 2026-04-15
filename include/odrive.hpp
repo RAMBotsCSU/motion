@@ -69,12 +69,7 @@ public:
         vsnprintf(&s[0], len + 1, format, args);
         va_end(args);
 
-        // Add space before checksum
-        s.push_back(' ');
-
-        // Calculate checksum over the modified string.
-        unsigned int cs = calculateChecksum(s);
-        s += "*" + std::to_string(cs) + "\n";
+        s += "\n";
 
         // Log("%s", s.c_str());
 

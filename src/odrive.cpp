@@ -55,8 +55,8 @@ void ODrive::connect() {
     // check if connected
     int fw_v_m = send("r fw_version_minor").toInt();
 
-    if(fw_v_m != 5) {
-        Log("Failed to connect to odrive 0x%X\n", _sn);
+    if(fw_v_m < 4 || fw_v_m > 9) {
+        Log("Failed to connect to odrive (fw_version_minor=%d)\n", fw_v_m);
         return;
     }
 

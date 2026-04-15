@@ -1,4 +1,5 @@
 #include <string>
+#include <cmath>
 
 #include "axis.hpp"
 #include "odrive.hpp"
@@ -61,6 +62,11 @@ void Axis::init() {
     fetchOffset();
     Log("  Offset: %f\n", getOffset());
 
+    // Invalidate cached target so the next move() re-sends a fresh position
+    // command using the new offset. Without this the dead zone could skip the
+    // command and leave the motor at the wrong position after a reconnect.
+    targetPos = NAN;
+
     // set closed loop
     if(fetchState() != AXIS_STATE_CLOSED_LOOP_CONTROL) setClosedLoop();
 
@@ -102,6 +108,11 @@ void Axis::ensureClosedLoop() {
     if(state != AXIS_STATE_CLOSED_LOOP_CONTROL) {
         Log("  axis%d state %d, requesting closed loop\n", id, state);
         setClosedLoop();
+        // The ODrive ignores trap-traj commands while not in closed-loop, so
+        // the last move() command was lost. Invalidate targetPos so the next
+        // move() call re-sends the position command instead of hitting the
+        // dead zone and leaving the motor at the wrong position.
+        targetPos = NAN;
     }
 }
 
@@ -110,9 +121,8 @@ int Axis::fetchState() {
 }
 
 void Axis::move(float pos) {
-    if(abs(pos - targetPos) > 0.001) {  // Only start new movement if target actually changed
+    if(isnan(targetPos) || abs(pos - targetPos) > 0.001) {
         targetPos = pos;
-
         odrive.send("t %d %f", id, targetPos + offset);
     }
 }

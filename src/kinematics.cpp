@@ -336,7 +336,7 @@ QuadJointAngles Kinematics::walk(int RFB, int RLR, int LT, float IMUpitch, float
         shortLeg2 = minLegHeight;
 
     int footOffset = 0;
-    int timer1 = 80 * 1.0 / 0.7 * (1.0f / GLOBAL_SPEED);  // FB gait timer  80
+    int timer1 = 80 * (1.0f / GLOBAL_SPEED);  // FB gait timer base (ms)
 
     // Log("lastRFB: %f lastRLR: %f LTFiltered: %f\n", lastRFB, lastRLR, LTFiltered);
 
@@ -435,11 +435,10 @@ QuadJointAngles Kinematics::walk(int RFB, int RLR, int LT, float IMUpitch, float
         stepLength = abs(fr_RFB);
         stepWidth = abs(fr_RLR);
 
-        if (stepLength == 0.0) {
-            stepLength = 0.01;  // avoid divide by zero
-        }
+        if (stepLength == 0.0) stepLength = 0.01;  // avoid divide by zero
+        if (stepWidth  == 0.0) stepWidth  = 0.01;  // avoid divide by zero (pure forward/backward motion)
 
-        stepAngle = atan(stepLength / stepWidth);    // radians       // work out actual distance of step
+        stepAngle = atan(stepLength / stepWidth);    // radians — work out actual distance of step
         stepHyp = abs(stepLength / sin(stepAngle));  // mm
 
         timerScale = timer1 + (stepHyp / 3.5);

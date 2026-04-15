@@ -78,13 +78,11 @@ void Sparky::update() {
             // check that all odrives are connected
             if(!od.isConnected()) {
                 _enabled = false;
-                break;
             }
 
-            // check for axis errors
+            // check for axis errors (check all ODrives, not just the first bad one)
             if(od.axis0.getError() > 0 || od.axis1.getError() > 0) {
                 _enabled = false;
-                break;
             }
         }
 
@@ -168,7 +166,14 @@ void Sparky::update() {
 
         Log("odr%d - ax%d: %d\n", ODck / 2, ODck % 2, err);
 
-        if(err > 0) axis->reset();
+        if(err > 0) {
+            axis->reset();
+            // Re-fetch immediately so the cached _error is cleared. Without
+            // this, getError() stays non-zero for up to 1.2s (12 axes × 100ms)
+            // and keeps _enabled = false in a rapid cycle even though the
+            // ODrive has already recovered.
+            axis->fetchError();
+        }
 
         // make sure idle axes are forced back into closed-loop
         axis->ensureClosedLoop();

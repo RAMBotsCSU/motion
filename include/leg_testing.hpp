@@ -1,11 +1,11 @@
-#ifndef LEG_TESTING_H
-#define LEG_TESTING_H
+// #ifndef LEG_TESTING_H
+// #define LEG_TESTING_H
 
-#include "kinematics.hpp"
+// #include "kinematics.hpp"
 
-// class Kinematics{
-//     public:
-//         QuadJointAngles Kinematics::legTesting(bool cross_press, bool triangle_press, float IMUpitch, float IMUroll);
-// };
+// // class Kinematics{
+// //     public:
+// //         QuadJointAngles Kinematics::legTesting(bool cross_press, bool triangle_press, float IMUpitch, float IMUroll);
+// // };
 
-#endif // LEG_TESTING_H
+// #endif // LEG_TESTING_H

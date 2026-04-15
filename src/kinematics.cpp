@@ -470,7 +470,7 @@ QuadJointAngles Kinematics::walk(int RFB, int RLR, int LT, float IMUpitch, float
 
 // push ups and sitting
 // If triangle is pressed, sparky sits. If cross is pressed, sparky goes down on all 4 legs. If both are pressed, sparky goes down on all 4 legs.
-QuadJointAngles Kinematics::pushUp(bool cross_press, bool triangle_press, float IMUpitch, float IMUroll) {
+QuadJointAngles Kinematics::pushUp(bool cross_press, bool triangle_press, bool circle_press, float IMUpitch, float IMUroll) {
     int pushUpPos = maxLegHeight;
     int sitPos = maxLegHeight;
 
@@ -503,6 +503,19 @@ QuadJointAngles Kinematics::pushUp(bool cross_press, bool triangle_press, float 
         translate (2, 0, 0, pushUpPos, corrRoll, corrPitch, 0),
         translate (3, 0, 0, pushUpPos, corrRoll, corrPitch, 0),
         translate (4, 0, 0, pushUpPos, corrRoll, corrPitch, 0),
+      };
+    }
+
+    if (circle_press) {
+      int downPos = maxLegHeight - 40;
+      int pawUpPos = maxLegHeight;
+      int pawForwardX = 160;
+
+      angles = {
+        translate(1, pawForwardX, 0, pawUpPos, corrRoll, corrPitch, 0),
+        translate(2, 0, 0, pawUpPos, corrRoll, corrPitch, 0),
+        translate(3, 0, 0, downPos, corrRoll, corrPitch, 0),
+        translate(4, 0, 0, downPos, corrRoll, corrPitch, 0),
       };
     }
 
@@ -616,6 +629,59 @@ QuadJointAngles Kinematics::dance(bool up, bool down, bool left, bool right, flo
 
 float Kinematics::ema(float current, float target, float alpha) {
   return current * (1.0 - alpha) + target * alpha;
+}
+
+// legs will be able to be tested individually when buttons are pressed
+
+//if triangle is pressed, front right leg moves
+//if square is pressed, front left leg moves
+//if cross is pressed, back left leg moves
+//if o is pressed, back right leg moves
+QuadJointAngles Kinematics::legTesting(bool triangle_press, bool square_press, bool cross_press, bool circle_press, float IMUpitch, float IMUroll){
+    int legpos = maxLegHeight - 40;
+    int intialpos = maxLegHeight;
+
+    float corrRoll = IMUroll * -0.3f; // correct for roll
+    float corrPitch = IMUpitch * -0.3f; // correct for pitch
+
+    QuadJointAngles angles = {};
+    if(triangle_press){
+        angles = {
+        translate (1, 0, 0, legpos, corrRoll, corrPitch, 0),
+        translate (2, 0, 0, intialpos, corrRoll, corrPitch, 0),
+        translate (3, 0, 0, intialpos, corrRoll, corrPitch, 0),
+        translate (4, 0, 0, intialpos, corrRoll, corrPitch, 0)
+        
+      };
+    } else if(square_press){
+        angles = {
+        translate (1, 0, 0, intialpos, corrRoll, corrPitch, 0),
+        translate (2, 0, 0, legpos, corrRoll, corrPitch, 0),
+        translate (3, 0, 0, intialpos, corrRoll, corrPitch, 0),
+        translate (4, 0, 0, intialpos, corrRoll, corrPitch, 0)
+        
+        
+      };
+    } else if(cross_press){
+        angles = {
+        translate (1, 0, 0, intialpos, corrRoll, corrPitch, 0),
+        translate (2, 0, 0, intialpos, corrRoll, corrPitch, 0),
+        translate (3, 0, 0, legpos, corrRoll, corrPitch, 0),
+        translate (4, 0, 0, intialpos, corrRoll, corrPitch, 0)
+
+        
+      };
+    } else if(circle_press){
+        angles = {
+        translate (1, 0, 0, intialpos, corrRoll, corrPitch, 0),
+        translate (2, 0, 0, intialpos, corrRoll, corrPitch, 0),
+        translate (3, 0, 0, intialpos, corrRoll, corrPitch, 0),
+        translate (4, 0, 0, legpos, corrRoll, corrPitch, 0),
+        
+      };
+
+    }
+    return angles;
 }
 
 QuadJointAngles Kinematics::legControl(float left_stick_horizontal, float left_stick_vertical, float left_trigger, float right_stick_horizontal, float right_stick_vertical, float right_trigger) {

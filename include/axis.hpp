@@ -15,7 +15,7 @@ class Axis {
 
         float offset = 0.0f;
         float targetPos = 0.0f;
-        float _speed = 0.0f;
+        float _speed = 0.5f;
 
     public:
         Axis(ODrive& _odrive, int _id);

@@ -60,15 +60,7 @@ void ODrive::connect() {
         return;
     }
 
-    int sn = send("r serial_number").toInt();
-
-    // Happens sometimes for some reason
-    if(sn == 0) return;
-
-    // the odrive doesnt send the full sn for some reason
-    // so this annoying math reconstructs most of it.
-    _sn = (uint64_t)sn * 100000ULL >> 24;
-    Log("Connected to SN: 0x%X\n", _sn);
+    Log("Connected to ODrive (fw_version_minor=%d)\n", fw_v_m);
 
     _connected = true;
 

@@ -48,9 +48,19 @@ void Sparky::setup() {
     mpu.setGyroRange(MPU6050_RANGE_250_DEG);
     mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
 
-    // Attempt to connect all odrives
-    for (ODrive& od : odrive) {
-        od.connect();
+    // Attempt to connect all odrives with a few retries.
+    // Single attempts can fail due to serial noise; update() handles any
+    // remaining reconnection after setup completes.
+    for (int attempt = 0; attempt < 5; attempt++) {
+        for (ODrive& od : odrive) {
+            if (!od.isConnected()) od.connect();
+        }
+        bool allConnected = true;
+        for (ODrive& od : odrive) {
+            if (!od.isConnected()) { allConnected = false; break; }
+        }
+        if (allConnected) break;
+        delay(500);
     }
 }
 
@@ -224,7 +234,7 @@ void Sparky::update() {
                     // Optionally, add a short delay here if needed for the robot to reach HOME
 
                     if(requestedMode == MotionMode::WALK) {
-                        setSpeed(0.5);
+                        setSpeed(0.7);
                     } else if (requestedMode == MotionMode::PUSH_UP) {
                         setSpeed(0.06); // Previously 0.05
                     } else if (requestedMode == MotionMode::DANCE) {

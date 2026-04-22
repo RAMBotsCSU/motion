@@ -126,13 +126,13 @@ void Sparky::update() {
             mpu.getEvent(&a, &g, &temp);
 
             // Calculate accel tilt (deg)
-            float accelPitch = atan2(a.acceleration.y, a.acceleration.z) * Gyr_Gain;
-            float accelRoll  = atan2(a.acceleration.x, a.acceleration.z) * Gyr_Gain;
+            float accelPitch = atan2(a.acceleration.y, a.acceleration.z) * (180.0f / PI);
+            float accelRoll  = atan2(a.acceleration.x, a.acceleration.z) * (180.0f / PI);
 
             // Gyro integration (deg/s * dt)
             float dt = TICK_MS / 1000.0f;
-            float gyroPitchRate = g.gyro.x * Gyr_Gain;
-            float gyroRollRate  = g.gyro.y * Gyr_Gain;
+            float gyroPitchRate = g.gyro.x * (180.0f / PI);
+            float gyroRollRate  = g.gyro.y * (180.0f / PI);
 
             // Complementary filter
             const float K = 0.9f;

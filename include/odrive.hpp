@@ -43,6 +43,7 @@ private:
     bool _connected = false;
     bool _initialized = false;
     unsigned long _last_send = 0;
+    int _readFailCount = 0;
 
 public:
     ODrive(HardwareSerial& _serial) : serial(_serial), axis0(*this, 0), axis1(*this, 1) {}
@@ -90,10 +91,19 @@ public:
 
         // Log("===== %d %c\n", respStr.size(), s[0]);
 
-        // If read command and no response
-        if(isConnected() && respStr.size() == 0 && s[0]=='r') {
-            Log("Lost connection to odrive 0x%X\n", _sn);
-            _connected = false;
+        // If read command and no response, require 3 consecutive failures
+        // before marking disconnected to avoid noise-induced false drops.
+        if(isConnected() && s[0]=='r') {
+            if(respStr.size() == 0) {
+                _readFailCount++;
+                if(_readFailCount >= 3) {
+                    Log("Lost connection to odrive (3 consecutive failures)\n");
+                    _connected = false;
+                    _readFailCount = 0;
+                }
+            } else {
+                _readFailCount = 0;
+            }
         }
 
         // Validate the checksum in the response if present.

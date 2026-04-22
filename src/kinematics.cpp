@@ -172,7 +172,7 @@ JointAngles Kinematics::translate(int leg, float xIn, float yIn, float zIn, floa
     // calc new Z to pass on
     xx1 = sin(footWholeAnglePitch) * zz2a;
 
-    if (leg == 1 || leg == 4) {
+    if (leg == 1 || leg == 2) {
         xx1 = -xx1;
     }
 

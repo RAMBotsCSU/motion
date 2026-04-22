@@ -42,15 +42,20 @@ void ODrive::init() {
 void ODrive::connect() {
     serial.setTimeout(100);
 
-    // ensure serial is clear
-    // can't get serial.flush() to work but this does
+    // Drain anything already in the buffer
     while(serial.available()) {
         serial.readStringUntil('\n');
     }
 
-    // ensure write buffer is clear
+    // Send a dummy command to provoke any stale ODrive responses, then wait
+    // for them all to arrive before draining again. Without this delay, stale
+    // responses queued while the Teensy was off can overlap with the
+    // fw_version_minor response and corrupt the read.
     serial.print("foo\n");
-    serial.readStringUntil('\n');
+    delay(200);
+    while(serial.available()) {
+        serial.readStringUntil('\n');
+    }
 
     // check if connected
     int fw_v_m = send("r fw_version_minor").toInt();

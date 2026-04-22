@@ -7,6 +7,12 @@
 #include "MPU6050.h"
 
 #define Gyr_Gain 0.00763358
+uint8_t rx1Buffer[512];
+uint8_t rx2Buffer[512];
+uint8_t rx3Buffer[512];
+uint8_t rx4Buffer[512];
+uint8_t rx5Buffer[512];
+uint8_t rx6Buffer[512];
 
 static float IMUpitch = 0.0f;
 static float IMUroll  = 0.0f;
@@ -34,6 +40,12 @@ void Sparky::setup() {
     SerialUSB.begin(115200);
     SerialUSB.setTimeout(0);
 
+    Serial1.addMemoryForRead(rx1Buffer, sizeof(rx1Buffer));
+    Serial2.addMemoryForRead(rx2Buffer, sizeof(rx2Buffer));
+    Serial3.addMemoryForRead(rx3Buffer, sizeof(rx3Buffer));
+    Serial4.addMemoryForRead(rx4Buffer, sizeof(rx4Buffer));
+    Serial5.addMemoryForRead(rx5Buffer, sizeof(rx5Buffer));
+    Serial6.addMemoryForRead(rx6Buffer, sizeof(rx6Buffer));
     // odrives
     Serial1.begin(115200);
     Serial2.begin(115200);
@@ -84,14 +96,15 @@ void Sparky::update() {
             Log("Did not recieve remote data within timeout\n");
         }
 
-        for (ODrive& od : odrive) {
-            // check that all odrives are connected
-            if(!od.isConnected()) {
+        for (int i = 0; i < 6; i++) {
+            if(!odrive[i].isConnected()) {
+                if(_enabled) Log("[DISABLE] ODrive %d disconnected\n", i);
                 _enabled = false;
             }
 
-            // check for axis errors (check all ODrives, not just the first bad one)
-            if(od.axis0.getError() > 0 || od.axis1.getError() > 0) {
+            if(odrive[i].axis0.getError() > 0 || odrive[i].axis1.getError() > 0) {
+                if(_enabled) Log("[DISABLE] ODrive %d axis error: ax0=%lu ax1=%lu\n", i,
+                    odrive[i].axis0.getError(), odrive[i].axis1.getError());
                 _enabled = false;
             }
         }

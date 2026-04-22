@@ -23,18 +23,29 @@ std::string ODRIVE_CONFIG[] = {
 
 
 void ODrive::init() {
-    for (size_t i = 0; i < sizeof(ODRIVE_CONFIG) / sizeof(ODRIVE_CONFIG[0]); ++i) {
-        String resp = send("w %s", ODRIVE_CONFIG[i].c_str());
-        if(resp.length() > 0) { // the odrive will only respond if the command fails
-            Log("w %s reponded: %s\n", ODRIVE_CONFIG[i].c_str(), resp.c_str());
+    // Check axis0 only — both axes share the same ODrive so their state matches.
+    // If already in closed-loop the ODrive was running before the Teensy connected.
+    // Skip encoder/GPIO config writes that would reinitialize the encoder and
+    // drop the axes out of closed-loop.
+    bool alreadyRunning = (axis0.fetchState() == AXIS_STATE_CLOSED_LOOP_CONTROL);
+
+    if (!alreadyRunning) {
+        for (size_t i = 0; i < sizeof(ODRIVE_CONFIG) / sizeof(ODRIVE_CONFIG[0]); ++i) {
+            String resp = send("w %s", ODRIVE_CONFIG[i].c_str());
+            if(resp.length() > 0) {
+                Log("w %s reponded: %s\n", ODRIVE_CONFIG[i].c_str(), resp.c_str());
+            }
         }
+    } else {
+        Log("ODrive already running, skipping top-level config\n");
     }
 
-    // init axis
-    axis0.init();
-    axis1.init();
+    axis0.init(alreadyRunning);
+    axis1.init(alreadyRunning);
 
-    send("ss"); // save config
+    if (!alreadyRunning) {
+        send("ss"); // save config
+    }
 
     _initialized = true;
 }

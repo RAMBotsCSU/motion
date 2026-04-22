@@ -38,7 +38,7 @@ std::string AXIS_CONFIG[] = {
 
 Axis::Axis(ODrive& _odrive, int _id) : odrive(_odrive), id(_id) {}
 
-void Axis::init() {
+void Axis::init(bool alreadyRunning) {
     // check for errors and attempt to reset them
     int err = 0;
     for(std::size_t i=0; i<3; ++i) {
@@ -67,15 +67,20 @@ void Axis::init() {
     // command and leave the motor at the wrong position after a reconnect.
     targetPos = NAN;
 
-    // set closed loop
-    if(fetchState() != AXIS_STATE_CLOSED_LOOP_CONTROL) setClosedLoop();
-
     int state = fetchState();
     Log("  Axis state: %d\n", state);
 
+    if (alreadyRunning) {
+        Log("  Already in closed-loop, skipping config writes\n");
+        setSpeed(_speed);
+        return;
+    }
+
+    if (state != AXIS_STATE_CLOSED_LOOP_CONTROL) setClosedLoop();
+
     for (size_t i = 0; i < sizeof(AXIS_CONFIG) / sizeof(AXIS_CONFIG[0]); ++i) {
         String resp = odrive.send("w axis%d.%s", id, AXIS_CONFIG[i].c_str());
-        if(resp.length() > 0) { // the odrive will only respond if the command fails
+        if(resp.length() > 0) {
             Log("  w axis%d.%s reponded: %s\n", id, AXIS_CONFIG[i].c_str(), resp.c_str());
         }
     }

@@ -172,7 +172,7 @@ JointAngles Kinematics::translate(int leg, float xIn, float yIn, float zIn, floa
     // calc new Z to pass on
     xx1 = sin(footWholeAnglePitch) * zz2a;
 
-    if (leg == 1 || leg == 2) {
+    if (leg == 1 || leg == 4) {
         xx1 = -xx1;
     }
 
@@ -515,8 +515,8 @@ QuadJointAngles Kinematics::pushUp(bool cross_press, bool triangle_press, bool c
       angles = {
         translate(1, pawForwardX, 0, pawUpPos, corrRoll, corrPitch, 0),
         translate(2, 0, 0, pawUpPos, corrRoll, corrPitch, 0),
-        translate(3, 0, 0, downPos, corrRoll, corrPitch, 0),
-        translate(4, 0, 0, downPos, corrRoll, corrPitch, 0),
+        translate(3, 0, 0, pawUpPos, corrRoll, corrPitch, 0),
+        translate(4, 0, 0, pawUpPos, corrRoll, corrPitch, 0),
       };
     }
 

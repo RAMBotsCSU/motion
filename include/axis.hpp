@@ -20,7 +20,7 @@ class Axis {
     public:
         Axis(ODrive& _odrive, int _id);
 
-        void init(void);
+        void init(bool alreadyRunning = false);
         void fetchOffset(void);
         float getOffset(void);
         u_int32_t fetchError(void);

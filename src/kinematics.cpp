@@ -515,8 +515,8 @@ QuadJointAngles Kinematics::pushUp(bool cross_press, bool triangle_press, bool c
       angles = {
         translate(1, pawForwardX, 0, pawUpPos, corrRoll, corrPitch, 0),
         translate(2, 0, 0, pawUpPos, corrRoll, corrPitch, 0),
-        translate(3, 0, 0, downPos, corrRoll, corrPitch, 0),
-        translate(4, 0, 0, downPos, corrRoll, corrPitch, 0),
+        translate(3, 0, 0, pawUpPos, corrRoll, corrPitch, 0),
+        translate(4, 0, 0, pawUpPos, corrRoll, corrPitch, 0),
       };
     }
 
